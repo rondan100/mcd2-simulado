@@ -8,6 +8,7 @@ import re
 import html
 import json
 import time
+import urllib.request
 from typing import List
 from pydantic import BaseModel, Field
 from google import genai
@@ -70,6 +71,129 @@ SECOES_PESOS = [
         "foco": "API Autodiscovery, Custom Policies, Gatekeeper, Automated Policies, RAML/OAS."
     }
 ]
+
+# URLs oficiais verificadas (sempre na versão 'latest') por seção da prova
+URLS_DOCS_OFICIAIS_LATEST = {
+    "Implement Maintainable and Modular Mule Applications and Their Maven Build": [
+        "https://docs.mulesoft.com/mule-runtime/latest/maven-reference",
+        "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
+        "https://docs.mulesoft.com/mule-runtime/latest/deploy-to-cloudhub",
+        "https://docs.mulesoft.com/mule-runtime/latest/shared-resources",
+        "https://docs.mulesoft.com/mule-runtime/latest/configuring-properties",
+        "https://docs.mulesoft.com/munit/latest/munit-maven-plugin",
+        "https://docs.mulesoft.com/munit/latest/coverage-maven-concept",
+        "https://docs.mulesoft.com/exchange/latest/to-publish-assets-maven",
+    ],
+    "Implement Performant and Reliable Mule Applications": [
+        "https://docs.mulesoft.com/mule-runtime/latest/idempotent-message-validator",
+        "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept",
+        "https://docs.mulesoft.com/mule-runtime/latest/streaming-about",
+        "https://docs.mulesoft.com/mule-runtime/latest/cache-scope",
+        "https://docs.mulesoft.com/mule-runtime/latest/until-successful-scope",
+        "https://docs.mulesoft.com/mule-runtime/latest/redelivery-policy",
+        "https://docs.mulesoft.com/vm-connector/latest/",
+        "https://docs.mulesoft.com/object-store/latest/osv2-guide",
+    ],
+    "Secure Data at Rest and In Transit": [
+        "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties",
+        "https://docs.mulesoft.com/mule-runtime/latest/safely-hiding-properties",
+        "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration",
+        "https://docs.mulesoft.com/cryptography-module/latest/cryptography-pgp",
+        "https://docs.mulesoft.com/cryptography-module/latest/cryptography-jce",
+        "https://docs.mulesoft.com/http-connector/latest/http-authentication",
+    ],
+    "Implement Monitorable Mule Applications": [
+        "https://docs.mulesoft.com/mule-runtime/latest/correlation-id",
+        "https://docs.mulesoft.com/mule-runtime/latest/business-events",
+        "https://docs.mulesoft.com/monitoring/latest/logs",
+        "https://docs.mulesoft.com/monitoring/latest/anypoint-custom-metrics",
+        "https://docs.mulesoft.com/monitoring/latest/alerts",
+        "https://docs.mulesoft.com/runtime-fabric/latest/deploy-to-runtime-fabric",
+        "https://docs.mulesoft.com/api-functional-monitoring/latest/bat-secret-create-task",
+    ],
+    "Expose Production-Ready Anypoint Platform-Managed APIs From Mule Applications": [
+        "https://docs.mulesoft.com/api-manager/latest/api-autodiscovery",
+        "https://docs.mulesoft.com/api-manager/latest/custom-policy",
+    ],
+}
+
+MAPA_SLUGS_CANONICOS = {
+    "maven-tools": "https://docs.mulesoft.com/mule-runtime/latest/maven-reference",
+    "mule-maven-plugin": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept",
+    "scatter-gather-component": "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept",
+    "streaming": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about",
+    "vm-connector-reference": "https://docs.mulesoft.com/vm-connector/latest/",
+    "cryptography-sign": "https://docs.mulesoft.com/cryptography-module/latest/cryptography-jce",
+    "intro-correlation-id": "https://docs.mulesoft.com/mule-runtime/latest/correlation-id",
+    "am-custom-metrics": "https://docs.mulesoft.com/monitoring/latest/anypoint-custom-metrics",
+    "anypoint-custom-metrics": "https://docs.mulesoft.com/monitoring/latest/anypoint-custom-metrics",
+    "health-checks": "https://docs.mulesoft.com/runtime-fabric/latest/deploy-to-runtime-fabric",
+    "health-check-endpoint": "https://docs.mulesoft.com/monitoring/latest/alerts",
+    "api-functional-monitoring": "https://docs.mulesoft.com/api-functional-monitoring/latest/bat-secret-create-task",
+    "api-autodiscovery-concept-mule-4": "https://docs.mulesoft.com/api-manager/latest/api-autodiscovery",
+    "custom-policies-configure": "https://docs.mulesoft.com/api-manager/latest/custom-policy",
+    "osv2-guide": "https://docs.mulesoft.com/object-store/latest/osv2-guide",
+    "to-publish-assets-maven": "https://docs.mulesoft.com/exchange/latest/to-publish-assets-maven",
+}
+
+_CACHE_URLS_VALIDADAS = {}
+
+
+def normalizar_e_validar_url(url: str, secao: str) -> str:
+    """
+    Converte versões fixas (ex: /4.4/, /2.3/, /2.x/) para /latest/ nas URLs da MuleSoft
+    e verifica se a página de documentação existe.
+    """
+    url_limpa = (url or "").strip().split("#")[0]
+
+    # 1. Substitui segmentos de versão numérica (ex: /4.4/, /2.3/, /1.3/, /2.x/) por /latest/
+    url_limpa = re.sub(
+        r"(https://docs\.mulesoft\.com/[^/]+)/(?:v?\d+(?:\.\d+|\.x)?)/",
+        r"\1/latest/",
+        url_limpa,
+    )
+
+    # 2. Garante /latest/ em seções que omitiram o segmento
+    url_limpa = re.sub(
+        r"^https://docs\.mulesoft\.com/(exchange|monitoring|object-store|runtime-fabric|api-functional-monitoring)/(?!latest/)(.+)$",
+        r"https://docs.mulesoft.com/\1/latest/\2",
+        url_limpa,
+    )
+
+    # 3. Corrige slugs antigos ou redirecionados para a página oficial latest exata
+    slug_final = url_limpa.rstrip("/").split("/")[-1]
+    if slug_final in MAPA_SLUGS_CANONICOS:
+        url_limpa = MAPA_SLUGS_CANONICOS[slug_final]
+
+    if not url_limpa.startswith("https://docs.mulesoft.com/"):
+        urls_secao = URLS_DOCS_OFICIAIS_LATEST.get(secao, [])
+        return urls_secao[0] if urls_secao else "https://docs.mulesoft.com/mule-runtime/latest/"
+
+    if url_limpa in _CACHE_URLS_VALIDADAS:
+        return _CACHE_URLS_VALIDADAS[url_limpa]
+
+    # 4. Verifica via HTTP se a URL existe (quando há conexão ativa)
+    try:
+        req = urllib.request.Request(
+            url_limpa,
+            method="HEAD",
+            headers={"User-Agent": "Mozilla/5.0 (MuleSoft-Doc-Validator/1.0)"},
+        )
+        with urllib.request.urlopen(req, timeout=4) as resp:
+            if 200 <= resp.status < 400:
+                _CACHE_URLS_VALIDADAS[url_limpa] = url_limpa
+                return url_limpa
+    except urllib.error.HTTPError as http_err:
+        if http_err.code == 404:
+            urls_secao = URLS_DOCS_OFICIAIS_LATEST.get(secao, [])
+            fallback = urls_secao[0] if urls_secao else "https://docs.mulesoft.com/mule-runtime/latest/"
+            _CACHE_URLS_VALIDADAS[url_limpa] = fallback
+            return fallback
+    except Exception:
+        pass
+
+    _CACHE_URLS_VALIDADAS[url_limpa] = url_limpa
+    return url_limpa
 
 
 def _limpar_json_texto(raw_text: str) -> str:
@@ -147,6 +271,9 @@ def _chamar_gemini_lote(
         resumo_existentes = "\n".join(f"- {e[:90]}..." for e in enunciados_existentes[-10:])
         evitar_txt = f"\n    Não repita cenários já abordados nestas questões anteriores:\n{resumo_existentes}\n"
 
+    urls_oficiais = URLS_DOCS_OFICIAIS_LATEST.get(secao_info["nome"], [])
+    lista_urls_txt = "\n".join(f"      - {u}" for u in urls_oficiais)
+
     prompt = f"""
     Atue como um arquiteto especialista em MuleSoft certificando desenvolvedores para o exame 'Salesforce Certified MuleSoft Developer II (MCD Level 2)'.
     
@@ -156,11 +283,13 @@ def _chamar_gemini_lote(
     Tópicos críticos para aprofundar: {secao_info['foco']}{evitar_txt}
     
     Instruções:
-    1. Baseie todas as questões e explicações estritamente na documentação oficial da MuleSoft (docs.mulesoft.com) sobre os tópicos acima.
-    2. Use o estilo de cobrança e pegadinhas comuns de exames e simulados MCD Level 2 (como FreeCram e Marks4Sure) para calibrar a dificuldade.
-    3. Evite questões puramente conceituais; crie cenários com trechos curtos de pom.xml, configurações de Maven, fluxos XML ou logs de erro.
-    4. IMPORTANTE para formatação em tela pequena (e-reader): Mantenha eventuais trechos de código com linhas curtas (máximo 45 caracteres por linha) para evitar quebras ilegíveis.
-    5. Escreva todo o conteúdo em Português, mas mantenha os termos técnicos da plataforma MuleSoft em Inglês (ex: Scatter-Gather, Object Store, Truststore, Parent POM, Autodiscovery).
+    1. Baseie todas as questões e explicações estritamente na documentação oficial da MuleSoft (docs.mulesoft.com) na versão 'latest'.
+    2. No campo 'url_referencia', utilize SEMPRE o caminho '/latest/' (nunca use versões fixas como /4.4/, /2.3/ ou /2.x/), escolhendo preferencialmente uma destas páginas oficiais reais nas quais a questão foi baseada:
+{lista_urls_txt}
+    3. Use o estilo de cobrança e pegadinhas comuns de exames e simulados MCD Level 2 (como FreeCram e Marks4Sure) para calibrar a dificuldade.
+    4. Evite questões puramente conceituais; crie cenários com trechos curtos de pom.xml, configurações de Maven, fluxos XML ou logs de erro.
+    5. IMPORTANTE para formatação em tela pequena (e-reader): Mantenha eventuais trechos de código com linhas curtas (máximo 45 caracteres por linha) para evitar quebras ilegíveis.
+    6. Escreva todo o conteúdo em Português, mas mantenha os termos técnicos da plataforma MuleSoft em Inglês (ex: Scatter-Gather, Object Store, Truststore, Parent POM, Autodiscovery).
     """
 
     usar_google_search = os.environ.get("USE_GOOGLE_SEARCH", "false").lower() == "true"
@@ -189,6 +318,7 @@ def _chamar_gemini_lote(
                 questoes = []
                 for q in dados.get("questoes", []):
                     q["secao"] = secao_info["nome"]
+                    q["url_referencia"] = normalizar_e_validar_url(q.get("url_referencia", ""), secao_info["nome"])
                     questoes.append(Questao(**q))
                 return questoes
             except Exception as err:
@@ -383,8 +513,10 @@ if __name__ == "__main__":
         try:
             with open(arquivo_backup, "r", encoding="utf-8") as f:
                 dados_antigos = json.load(f)
-                banco_completo = [Questao(**q) for q in dados_antigos]
-            print(f"[Info] {len(banco_completo)} questão(ões) carregada(s) do backup existente.")
+                for q in dados_antigos:
+                    q["url_referencia"] = normalizar_e_validar_url(q.get("url_referencia", ""), q.get("secao", ""))
+                    banco_completo.append(Questao(**q))
+            print(f"[Info] {len(banco_completo)} questão(ões) carregada(s) e com referências 'latest' validadas.")
         except Exception as e:
             print(f"[Aviso] Não foi possível ler o backup anterior ({e}). Iniciando do zero.")
 

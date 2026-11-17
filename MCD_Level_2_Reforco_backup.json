@@ -1,59 +1,59 @@
 [
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Sua equipe utiliza um Parent POM corporativo para padronizar versões de plugins e dependências. Ao tentar fazer o deploy de uma aplicação via Mule Maven Plugin, o build falha com 'Dependency convergence error'. Como resolver isso mantendo a modularidade?",
+    "enunciado": "Sua equipe utiliza um Parent POM corporativo para padronizar versões de plugins e dependências. Ao tentar fazer o deploy de uma aplicação via Mule Maven Plugin, o build falha por conflito de versões transitivas entre módulos. Como resolver isso mantendo a modularidade recomendada pela MuleSoft?",
     "codigo_xml_ou_dw": "<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>com.corp</groupId>\n      <artifactId>bom</artifactId>\n      <version>1.0.0</version>\n      <type>pom</type>\n      <scope>import</scope>\n    </dependency>\n  </dependencies>\n</dependencyManagement>",
     "alternativas": [
       "A) Adicionar a tag <enforce>false</enforce> no plugin maven-enforcer-plugin.",
-      "B) Utilizar o BOM no dependencyManagement do Parent POM para garantir versões únicas.",
-      "C) Forçar a versão no pom.xml da aplicação usando <dependency> com <version> explícita.",
-      "D) Remover o Parent POM e declarar todas as dependências manualmente."
+      "B) Utilizar um BOM (Bill of Materials) com <type>pom</type> e <scope>import</scope> no dependencyManagement.",
+      "C) Forçar a versão no pom.xml da aplicação usando <dependency> com <scope>system</scope>.",
+      "D) Remover o Parent POM e declarar todas as dependências manualmente em cada projeto."
     ],
-    "resposta_correta": "B) Utilizar o BOM no dependencyManagement do Parent POM para garantir versões únicas.",
-    "explicacao_oficial": "O uso de BOM (Bill of Materials) via 'import' no dependencyManagement é a prática recomendada pela MuleSoft para centralizar o controle de versões e evitar conflitos de transitividade em projetos modulares.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/maven-tools"
+    "resposta_correta": "B) Utilizar um BOM (Bill of Materials) com <type>pom</type> e <scope>import</scope> no dependencyManagement.",
+    "explicacao_oficial": "Conforme a referência oficial de Maven no Mule Runtime, o uso de um BOM (Bill of Materials) importado via <type>pom</type> e <scope>import</scope> dentro de <dependencyManagement> centraliza o controle de versões e evita conflitos entre dependências em projetos modulares.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/maven-reference"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Você precisa garantir que 100% dos fluxos tenham testes MUnit. O build deve falhar se a cobertura for inferior a 80%. Qual configuração no pom.xml é necessária?",
-    "codigo_xml_ou_dw": "<plugin>\n  <groupId>com.mulesoft.munit</groupId>\n  <artifactId>munit-maven-plugin</artifactId>\n  <version>2.3.x</version>\n  <configuration>\n    <coverage>\n      <runCoverage>true</runCoverage>\n      <requiredApplicationCoverage>80</requiredApplicationCoverage>\n    </coverage>\n  </configuration>\n</plugin>",
+    "enunciado": "Você precisa garantir no pipeline de CI/CD que o build do Maven falhe automaticamente se a cobertura global dos testes MUnit da aplicação for inferior a 80%. Analise o trecho do pom.xml abaixo e identifique o ajuste necessário:",
+    "codigo_xml_ou_dw": "<plugin>\n  <groupId>com.mulesoft.munit.tools</groupId>\n  <artifactId>munit-maven-plugin</artifactId>\n  <configuration>\n    <coverage>\n      <runCoverage>true</runCoverage>\n      <requiredApplicationCoverage>80</requiredApplicationCoverage>\n    </coverage>\n  </configuration>\n</plugin>",
     "alternativas": [
-      "A) A configuração está correta, mas falta a tag <failBuild>true</failBuild>.",
-      "B) O MUnit não suporta falha automática por cobertura via plugin.",
-      "C) Deve-se usar o parâmetro <minCoverage>80</minCoverage> na tag <coverage>.",
-      "D) A configuração está correta e o plugin falhará o build por padrão."
+      "A) A configuração precisa incluir <failBuild>true</failBuild> dentro de <coverage> para falhar o build.",
+      "B) O MUnit não suporta falha automática por cobertura via plugin no Maven.",
+      "C) Deve-se substituir <requiredApplicationCoverage> por <minCoverage>80</minCoverage>.",
+      "D) É obrigatório alterar o groupId do plugin para org.mule.tools.maven."
     ],
-    "resposta_correta": "D) A configuração está correta e o plugin falhará o build por padrão.",
-    "explicacao_oficial": "O munit-maven-plugin, quando configurado com requiredApplicationCoverage, força a falha do build do Maven caso o threshold de cobertura não seja atingido.",
-    "url_referencia": "https://docs.mulesoft.com/munit/2.3/munit-maven-plugin"
+    "resposta_correta": "A) A configuração precisa incluir <failBuild>true</failBuild> dentro de <coverage> para falhar o build.",
+    "explicacao_oficial": "De acordo com a documentação oficial de MUnit Coverage, definir apenas <requiredApplicationCoverage> gera o alerta de cobertura, mas o parâmetro <failBuild> tem valor padrão false. É obrigatório configurar <failBuild>true</failBuild> dentro de <coverage> para que o munit-maven-plugin interrompa o build quando a meta não for atingida.",
+    "url_referencia": "https://docs.mulesoft.com/munit/latest/coverage-maven-concept"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Uma aplicação Mule usa um Domain Project para compartilhar configurações de HTTP Listener. Ao tentar fazer o deploy no CloudHub, o que acontece?",
+    "enunciado": "Uma aplicação Mule 4 utiliza um Domain Project (Mule Domain) para compartilhar configurações de HTTP Listener e porta entre múltiplas aplicações. Ao tentar implantar essa arquitetura no CloudHub, qual é o comportamento esperado?",
     "codigo_xml_ou_dw": "<!-- Domain Project -->\n<http:listener-config\n  name=\"Shared_HTTP_Config\">\n  <http:listener-connection\n    host=\"0.0.0.0\" port=\"8081\"/>\n</http:listener-config>",
     "alternativas": [
-      "A) O deploy ocorre normalmente, pois o CloudHub suporta Domains.",
-      "B) O deploy falha, pois Domains não são suportados no CloudHub.",
-      "C) O deploy ocorre, mas o listener não será exposto.",
-      "D) O deploy exige o uso de Shared Load Balancer configurado."
+      "A) O deploy ocorre normalmente, pois o CloudHub compartilha o mesmo worker entre aplicações do domínio.",
+      "B) Não é suportado, pois cada worker do CloudHub executa apenas uma aplicação Mule isolada e não suporta Mule Domains.",
+      "C) O deploy ocorre, mas o listener compartilhado só responde via VPC interna.",
+      "D) O deploy funciona desde que um Dedicated Load Balancer (DLB) esteja ativo."
     ],
-    "resposta_correta": "B) O deploy falha, pois Domains não são suportados no CloudHub.",
-    "explicacao_oficial": "Mule Domains são suportados apenas em ambientes On-Premises (Mule Runtime standalone). O CloudHub não suporta a implantação de Domain Projects.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/shared-resources"
+    "resposta_correta": "B) Não é suportado, pois cada worker do CloudHub executa apenas uma aplicação Mule isolada e não suporta Mule Domains.",
+    "explicacao_oficial": "Conforme a documentação oficial de Shared Resources, projetos Mule Domain são destinados a instâncias Mule standalone (on-premises) onde múltiplas aplicações rodam no mesmo runtime. No CloudHub cada aplicação roda em seu próprio worker isolado, portanto Domain Projects não são suportados (recomenda-se usar Mule Libraries via Maven).",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/shared-resources"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Você está externalizando propriedades usando um arquivo YAML. Qual a ordem de precedência correta para que variáveis de sistema sobrescrevam valores do arquivo?",
-    "codigo_xml_ou_dw": "<configuration-properties\n  file=\"config.yaml\" />\n<configuration-properties\n  file=\"env/${env}.yaml\" />",
+    "enunciado": "Você está externalizando propriedades em uma aplicação Mule 4 utilizando arquivos YAML, variáveis de ambiente do sistema operacional e System Properties (-D). Segundo a hierarquia oficial do Mule Runtime, qual é a ordem correta de precedência (da maior prioridade para a menor)?",
+    "codigo_xml_ou_dw": "<configuration-properties\n  file=\"config-${env}.yaml\" />\n<global-property\n  name=\"env\" value=\"dev\" />",
     "alternativas": [
-      "A) System Properties > env/${env}.yaml > config.yaml",
-      "B) config.yaml > env/${env}.yaml > System Properties",
-      "C) env/${env}.yaml > config.yaml > System Properties",
-      "D) System Properties > config.yaml > env/${env}.yaml"
+      "A) System Properties > Environment Variables > Application Properties Files > Global Properties",
+      "B) Application Properties Files > Global Properties > System Properties > Environment Variables",
+      "C) Global Properties > Application Properties Files > Environment Variables > System Properties",
+      "D) Environment Variables > Global Properties > System Properties > Application Properties Files"
     ],
-    "resposta_correta": "A) System Properties > env/${env}.yaml > config.yaml",
-    "explicacao_oficial": "O Mule Runtime avalia as propriedades seguindo uma ordem de precedência onde System Properties (argumentos -D) possuem a prioridade mais alta, seguidas pelos arquivos declarados na ordem inversa no XML.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/configuring-properties"
+    "resposta_correta": "A) System Properties > Environment Variables > Application Properties Files > Global Properties",
+    "explicacao_oficial": "Na hierarquia oficial de propriedades do Mule Runtime (Configuring Properties), a ordem de precedência da mais alta para a mais baixa é: Deployment properties (Runtime Manager) > System properties (-D) > Environment variables > Application properties files (<configuration-properties>) > Global properties (<global-property>).",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/configuring-properties"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
@@ -61,18 +61,18 @@
     "codigo_xml_ou_dw": "<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>com.corp</groupId>\n      <artifactId>corp-bom</artifactId>\n      <version>1.0.0</version>\n      <type>pom</type>\n    </dependency>\n  </dependencies>\n</dependencyManagement>",
     "alternativas": [
       "A) A tag <type>pom</type> foi declarada incorretamente e deveria ser <type>jar</type>.",
-      "B) O escopo da dependência do BOM não foi definido explicitamente como import.",
+      "B) O escopo da dependência do BOM não foi definido explicitamente como <scope>import</scope>.",
       "C) O BOM corporativo precisa ser publicado com a tag <packaging>mule-application</packaging>.",
       "D) As dependências filhas precisam declarar a versão explicitamente para sobrescrever o BOM."
     ],
-    "resposta_correta": "B) O escopo da dependência do BOM não foi definido explicitamente como import.",
-    "explicacao_oficial": "Para importar um Bill of Materials (BOM) no Maven, a dependência dentro da seção <dependencyManagement> deve especificar explicitamente o escopo <scope>import</scope> e o tipo <type>pom</type>. Sem o escopo import, o Maven não gerencia as versões das dependências transitivas corretamente.",
+    "resposta_correta": "B) O escopo da dependência do BOM não foi definido explicitamente como <scope>import</scope>.",
+    "explicacao_oficial": "Para importar um Bill of Materials (BOM) no Maven em projetos Mule, a dependência dentro da seção <dependencyManagement> deve especificar obrigatoriamente <type>pom</type> e <scope>import</scope>. Sem o escopo import, as versões declaradas no BOM não são importadas.",
     "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/maven-reference"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Durante o build de uma aplicação Mule 4 no pipeline de CI/CD, o Mule Maven Plugin falha ao tentar fazer o empacotamento (package), exibindo um erro de que um jar compartilhado customizado não foi encontrado no repositório remoto. O jar é construído localmente no mesmo repositório do projeto multi-módulo. Qual configuração no pom.xml do projeto pai ou plugin resolve esse erro?",
-    "codigo_xml_ou_dw": "<plugin>\n  <groupId>org.mulesoft.maven.plugin</groupId>\n  <artifactId>\n    mule-maven-plugin\n  </artifactId>\n  <version>4.2.0</version>\n  <extensions>true</extensions>\n</plugin>",
+    "enunciado": "Durante o build de uma aplicação Mule 4 no pipeline de CI/CD, o Mule Maven Plugin falha ao empacotar a aplicação porque não reconhece os fluxos XML reutilizáveis contidos em uma biblioteca Mule compartilhada criada pela equipe. Qual configuração na declaração da dependência no pom.xml da aplicação consumidora é obrigatória?",
+    "codigo_xml_ou_dw": "<dependency>\n  <groupId>com.corp</groupId>\n  <artifactId>common-flows</artifactId>\n  <version>1.0.0</version>\n  <!-- Qual tag falta aqui? -->\n</dependency>",
     "alternativas": [
       "A) Adicionar <classifier>mule-plugin</classifier> na dependência da biblioteca compartilhada.",
       "B) Configurar o plugin Maven Reactor para compilar o módulo compartilhado por último.",
@@ -80,483 +80,483 @@
       "D) Alterar o escopo da biblioteca compartilhada para <scope>system</scope>."
     ],
     "resposta_correta": "A) Adicionar <classifier>mule-plugin</classifier> na dependência da biblioteca compartilhada.",
-    "explicacao_oficial": "No ecossistema Mule 4, conectores, policies e extensões customizadas criadas como bibliotecas compartilhadas devem ser empacotados com o classificador correto (<classifier>mule-plugin</classifier>) para que o Mule Maven Plugin os reconheça adequadamente no classpath da aplicação.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/mule-maven-plugin"
+    "explicacao_oficial": "No Mule 4, conectores, módulos e bibliotecas compartilhadas empacotadas pelo Mule Maven Plugin geram artefatos com o classificador 'mule-plugin'. Para que a aplicação consumidora importe seus recursos e configurações XML, a dependência deve incluir <classifier>mule-plugin</classifier>.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Sua equipe implementou testes MUnit cobrindo um fluxo crítico que consome mensagens de uma fila JMS. Ao executar 'mvn clean test', a execução passa com sucesso localmente, mas o relatório de cobertura gerado pelo MUnit falha no pipeline do SonarQube por estar abaixo do limite exigido. Identifique a falha na configuração do MUnit Maven Plugin que causa essa divergência de métricas:",
-    "codigo_xml_ou_dw": "<plugin>\n  <groupId>\n    com.mulesoft.munit\n  </groupId>\n  <artifactId>\n    munit-maven-plugin\n  </artifactId>\n  <version>3.2.0</version>\n  <executions>\n    <execution>\n      <goals>\n        <goal>test</goal>\n      </goals>\n    </execution>\n  </executions>\n</plugin>",
+    "enunciado": "Sua equipe implementou testes MUnit cobrindo um fluxo crítico. Ao executar o build, os testes rodam, mas o relatório de cobertura não é consolidado na fase de verificação do Maven. Identifique a falha na configuração de executions do MUnit Maven Plugin:",
+    "codigo_xml_ou_dw": "<plugin>\n  <groupId>com.mulesoft.munit.tools</groupId>\n  <artifactId>munit-maven-plugin</artifactId>\n  <version>3.2.0</version>\n  <executions>\n    <execution>\n      <goals>\n        <goal>test</goal>\n      </goals>\n    </execution>\n  </executions>\n</plugin>",
     "alternativas": [
-      "A) Falta adicionar o goal <goal>coverage-report</goal> explicitamente nas execuções.",
-      "B) O plugin do MUnit exige que o escopo seja definido como test explicitamente.",
+      "A) Falta adicionar o goal <goal>coverage-report</goal> explicitamente nas execuções do plugin.",
+      "B) O plugin do MUnit exige que o escopo seja definido como runtime explicitamente.",
       "C) O goal <goal>test</goal> foi descontinuado nas versões 3.x do MUnit Plugin.",
-      "D) A versão do MUnit Plugin está incompatível com o Runtime Mule 4.4."
+      "D) A tag <extensions>true</extensions> é obrigatória para gerar relatórios de cobertura."
     ],
-    "resposta_correta": "A) Falta adicionar o goal <goal>coverage-report</goal> explicitamente nas execuções.",
-    "explicacao_oficial": "Para que o MUnit Maven Plugin gere os relatórios de cobertura de código no formato exigido por ferramentas de análise estática como SonarQube, é necessário configurar explicitamente os goals de cobertura (<goal>coverage-report</goal>) na seção de execuções do pom.xml.",
+    "resposta_correta": "A) Falta adicionar o goal <goal>coverage-report</goal> explicitamente nas execuções do plugin.",
+    "explicacao_oficial": "Conforme a documentação oficial do MUnit Maven Plugin, para que o relatório de cobertura seja processado durante a execução do Maven, a seção <goals> dentro de <execution> deve declarar tanto <goal>test</goal> quanto <goal>coverage-report</goal>.",
     "url_referencia": "https://docs.mulesoft.com/munit/latest/munit-maven-plugin"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Você precisa publicar uma nova versão de uma API Mule diretamente no Anypoint Exchange usando o Mule Maven Plugin. A aplicação usa credenciais corporativas configuradas no arquivo settings.xml do Maven. Durante o comando 'mvn deploy', ocorre um erro de autenticação 401 Unauthorized. Qual configuração no settings.xml está incorreta ou ausente?",
-    "codigo_xml_ou_dw": "<server>\n  <id>anypoint-exchange-v3</id>\n  <username>oauth2</username>\n  <password>your-token</password>\n</server>",
+    "enunciado": "Você precisa publicar um asset reutilizável diretamente no Anypoint Exchange usando o Maven (Exchange Maven Facade API v3). As credenciais foram configuradas no arquivo settings.xml, mas o comando 'mvn clean deploy' falha com erro 401 Unauthorized. Qual é o requisito obrigatório de mapeamento entre o pom.xml e o settings.xml?",
+    "codigo_xml_ou_dw": "<server>\n  <id>anypoint-exchange-v3</id>\n  <username>~~~Client~~~</username>\n  <password>${clientId}~?~${secret}</password>\n</server>",
     "alternativas": [
-      "A) O ID do servidor no settings.xml deve corresponder exatamente ao ID configurado no distributionManagement do pom.xml.",
-      "B) O campo username deve conter o e-mail do usuário do Anypoint Platform em vez de oauth2.",
-      "C) O password deve ser substituído pela Client ID e Client Secret concatenadas.",
+      "A) O <id> do elemento <server> no settings.xml deve corresponder exatamente ao <id> do <repository> em <distributionManagement> no pom.xml.",
+      "B) O maven-deploy-plugin padrão deve ser declarado com <extensions>true</extensions> para autenticar no Exchange v3.",
+      "C) O campo username deve ser obrigatoriamente 'oauth2' para Connected Apps.",
       "D) O plugin requer a tag <privateRepository>true</privateRepository> configurada no servidor."
     ],
-    "resposta_correta": "A) O ID do servidor no settings.xml deve corresponder exatamente ao ID configurado no distributionManagement do pom.xml.",
-    "explicacao_oficial": "O Maven utiliza o ID especificado no elemento <server> do arquivo settings.xml para buscar as credenciais de autenticação correspondentes ao repositório de destino declarado na seção <distributionManagement> do pom.xml da aplicação.",
+    "resposta_correta": "A) O <id> do elemento <server> no settings.xml deve corresponder exatamente ao <id> do <repository> em <distributionManagement> no pom.xml.",
+    "explicacao_oficial": "De acordo com a documentação oficial de publicação de assets no Exchange via Maven, o Maven localiza as credenciais comparando o <id> definido em <distributionManagement><repository> no pom.xml com o <id> correspondente em <servers><server> no settings.xml.",
     "url_referencia": "https://docs.mulesoft.com/exchange/latest/to-publish-assets-maven"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Sua equipe deseja aplicar o conceito de 'Shared Libraries' para compartilhar lógica de tratamento de erros entre múltiplos projetos. Você criou um projeto Mule Library. Qual a configuração correta no pom.xml da aplicação consumidora para garantir que a biblioteca seja incluída no artefato final?",
+    "enunciado": "Sua equipe criou um projeto Mule Library para compartilhar configurações de Error Handler global entre múltiplos projetos Mule 4. Como esse projeto biblioteca deve ser empacotado e consumido via Mule Maven Plugin?",
     "codigo_xml_ou_dw": "<dependency>\n  <groupId>com.org</groupId>\n  <artifactId>error-lib</artifactId>\n  <version>1.0.0</version>\n  <classifier>mule-plugin</classifier>\n</dependency>",
     "alternativas": [
-      "A) Usar o classifier 'jar' e adicionar ao classpath.",
-      "B) Usar o classifier 'mule-plugin' para que o Mule Maven Plugin processe a dependência.",
-      "C) Adicionar como 'provided' para evitar conflitos de versão.",
-      "D) Não é possível compartilhar lógica via Mule Library, apenas via Domain Projects."
+      "A) Empacotar com <packaging>jar</packaging> e consumir sem classifier.",
+      "B) Empacotar com o Mule Maven Plugin e consumir a dependência usando <classifier>mule-plugin</classifier>.",
+      "C) Adicionar como <scope>provided</scope> para evitar conflitos de versão no runtime.",
+      "D) Não é possível compartilhar Error Handlers via biblioteca, apenas via Domain Projects."
     ],
-    "resposta_correta": "B) Usar o classifier 'mule-plugin' para que o Mule Maven Plugin processe a dependência.",
-    "explicacao_oficial": "Para que uma biblioteca seja tratada como um módulo Mule (e não apenas um JAR comum), o Mule Maven Plugin exige o classifier 'mule-plugin'. Isso garante que os metadados do Mule sejam lidos corretamente durante o build.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/mule-maven-plugin"
+    "resposta_correta": "B) Empacotar com o Mule Maven Plugin e consumir a dependência usando <classifier>mule-plugin</classifier>.",
+    "explicacao_oficial": "O Mule Maven Plugin permite empacotar bibliotecas Mule reutilizáveis e importá-las em outras aplicações declarando a dependência com <classifier>mule-plugin</classifier> no pom.xml da aplicação consumidora.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/mmp-concept"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Você está configurando o 'Mule Maven Plugin' para realizar o deploy automático no CloudHub. O build falha com erro de autenticação, apesar de as credenciais estarem no settings.xml. Qual a configuração necessária para referenciar o ambiente correto?",
-    "codigo_xml_ou_dw": "<configuration>\n  <cloudHubDeployment>\n    <uri>https://anypoint.mulesoft.com</uri>\n    <muleVersion>4.4.0</muleVersion>\n    <environment>Production</environment>\n  </cloudHubDeployment>\n</configuration>",
+    "enunciado": "Você está configurando o Mule Maven Plugin para realizar o deploy automático de uma aplicação no CloudHub utilizando as credenciais armazenadas na seção <servers> do arquivo settings.xml do Maven. Qual propriedade deve ser adicionada dentro de <cloudHubDeployment> no pom.xml para referenciar essas credenciais?",
+    "codigo_xml_ou_dw": "<configuration>\n  <cloudHubDeployment>\n    <uri>https://anypoint.mulesoft.com</uri>\n    <muleVersion>4.6.0</muleVersion>\n    <environment>Production</environment>\n  </cloudHubDeployment>\n</configuration>",
     "alternativas": [
-      "A) Adicionar a tag <server> com o ID do servidor definido no settings.xml.",
-      "B) Definir a variável de ambiente MULE_ENV no pipeline.",
-      "C) Incluir a tag <businessGroup> obrigatoriamente.",
-      "D) O plugin não suporta autenticação via settings.xml, apenas via variáveis."
+      "A) Adicionar a tag <server> contendo o ID do servidor definido no settings.xml.",
+      "B) Definir a variável de ambiente MULE_SETTINGS_SERVER no pipeline.",
+      "C) Incluir a tag <credentialsRef> obrigatoriamente.",
+      "D) O Mule Maven Plugin não suporta leitura do settings.xml para deploy no CloudHub."
     ],
-    "resposta_correta": "A) Adicionar a tag <server> com o ID do servidor definido no settings.xml.",
-    "explicacao_oficial": "O Mule Maven Plugin utiliza o ID definido na tag <server> dentro da configuração de deployment para mapear as credenciais (username/password ou connected app) armazenadas no settings.xml do Maven.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/deploy-to-cloudhub"
+    "resposta_correta": "A) Adicionar a tag <server> contendo o ID do servidor definido no settings.xml.",
+    "explicacao_oficial": "Conforme a documentação de Deploy to CloudHub usando o Mule Maven Plugin, o parâmetro <server> dentro de <cloudHubDeployment> especifica o ID do servidor configurado no settings.xml do Maven de onde o plugin lerá as credenciais do Anypoint Platform.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/deploy-to-cloudhub"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Ao utilizar um 'Parent POM' corporativo, você percebe que as versões dos conectores estão sendo sobrescritas incorretamente. Como garantir que as versões definidas no 'dependencyManagement' do Parent POM sejam respeitadas?",
-    "codigo_xml_ou_dw": "<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>org.mule.connectors</groupId>\n      <artifactId>mule-http-connector</artifactId>\n      <version>1.7.3</version>\n    </dependency>\n  </dependencies>\n</dependencyManagement>",
+    "enunciado": "Ao utilizar um Parent POM corporativo em projetos Mule 4, você deseja que todas as aplicações filhas herdem automaticamente a versão homologada do conector HTTP definida no <dependencyManagement> do Parent POM. Como a dependência deve ser declarada no pom.xml da aplicação filha?",
+    "codigo_xml_ou_dw": "<!-- Parent POM -->\n<dependencyManagement>\n  <dependencies>\n    <dependency>\n      <groupId>org.mule.connectors</groupId>\n      <artifactId>mule-http-connector</artifactId>\n      <version>1.9.0</version>\n      <classifier>mule-plugin</classifier>\n    </dependency>\n  </dependencies>\n</dependencyManagement>",
     "alternativas": [
-      "A) Remover a tag <version> do pom.xml da aplicação filha.",
-      "B) Adicionar a tag <scope>import</scope> no pom.xml da aplicação.",
-      "C) Definir as versões no arquivo 'mule-artifact.json'.",
-      "D) O Maven sempre prioriza a versão do pom.xml da aplicação, não há como forçar."
+      "A) Declarar a dependência no pom.xml filho omitindo a tag <version> (mantendo groupId, artifactId e classifier).",
+      "B) Adicionar a tag <scope>import</scope> na dependência dentro do pom.xml da aplicação filha.",
+      "C) Definir as versões no arquivo mule-artifact.json da aplicação filha.",
+      "D) Não declarar a dependência no pom.xml filho, pois o dependencyManagement já injeta todas automaticamente."
     ],
-    "resposta_correta": "A) Remover a tag <version> do pom.xml da aplicação filha.",
-    "explicacao_oficial": "Quando uma dependência é gerenciada via 'dependencyManagement' no Parent POM, a aplicação filha deve omitir a tag <version> para herdar a versão definida centralmente, evitando conflitos de versão.",
-    "url_referencia": "https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html"
+    "resposta_correta": "A) Declarar a dependência no pom.xml filho omitindo a tag <version> (mantendo groupId, artifactId e classifier).",
+    "explicacao_oficial": "De acordo com a referência de Maven na documentação do Mule Runtime, <dependencyManagement> no Parent POM centraliza as versões, mas não inclui as dependências automaticamente nos filhos; o pom.xml filho deve declarar a dependência sem a tag <version> para herdar a versão gerenciada.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/maven-reference"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
-    "enunciado": "Você precisa validar se o 'MUnit Coverage' atinge 80% em um build de CI/CD. Qual configuração no pom.xml garante que o build falhe caso a cobertura mínima não seja atingida?",
-    "codigo_xml_ou_dw": "<plugin>\n  <groupId>com.mulesoft.munit</groupId>\n  <artifactId>munit-maven-plugin</artifactId>\n  <configuration>\n    <coverage>\n      <runCoverage>true</runCoverage>\n      <requiredApplicationCoverage>80</requiredApplicationCoverage>\n    </coverage>\n  </configuration>\n</plugin>",
+    "enunciado": "Você configurou o MUnit Maven Plugin no pom.xml para validar limites mínimos de cobertura em três níveis: aplicação (80%), arquivo XML/resource (75%) e fluxo (70%), além de exportar o relatório para análise no SonarQube. Quais tags dentro de <coverage> atendem exatamente a essa especificação oficial?",
+    "codigo_xml_ou_dw": "<coverage>\n  <runCoverage>true</runCoverage>\n  <failBuild>true</failBuild>\n  <!-- Limites e formato -->\n</coverage>",
     "alternativas": [
-      "A) Apenas definir <runCoverage>true</runCoverage>.",
-      "B) Adicionar a tag <failBuild>true</failBuild> dentro de <coverage>.",
-      "C) O plugin falha automaticamente se <requiredApplicationCoverage> for definido.",
-      "D) É necessário usar um script externo para ler o arquivo 'coverage.html'."
+      "A) <requiredApplicationCoverage>, <requiredResourceCoverage>, <requiredFlowCoverage> e <format>sonar</format> em <formats>.",
+      "B) <appCoverage>, <xmlCoverage>, <flowCoverage> e <sonarReport>true</sonarReport>.",
+      "C) <minApplicationCoverage>, <minResourceCoverage>, <minFlowCoverage> e <output>xml</output>.",
+      "D) Apenas <requiredApplicationCoverage> é suportado pelo MUnit Maven Plugin."
     ],
-    "resposta_correta": "C) O plugin falha automaticamente se <requiredApplicationCoverage> for definido.",
-    "explicacao_oficial": "Ao definir a tag <requiredApplicationCoverage> no munit-maven-plugin, o plugin automaticamente compara a cobertura calculada com o valor definido e falha o build do Maven caso o requisito não seja cumprido.",
-    "url_referencia": "https://docs.mulesoft.com/munit/2.3/munit-maven-plugin"
+    "resposta_correta": "A) <requiredApplicationCoverage>, <requiredResourceCoverage>, <requiredFlowCoverage> e <format>sonar</format> em <formats>.",
+    "explicacao_oficial": "Conforme a documentação do MUnit Maven Plugin, os três níveis de threshold são configurados pelas tags <requiredApplicationCoverage>, <requiredResourceCoverage> e <requiredFlowCoverage>, e os formatos suportados em <formats><format> são console, html, json e sonar.",
+    "url_referencia": "https://docs.mulesoft.com/munit/latest/munit-maven-plugin"
   },
   {
     "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Um desenvolvedor precisa garantir que mensagens duplicadas não sejam processadas em um fluxo que consome de um endpoint HTTP. Ele configurou o Idempotent Message Validator usando uma Object Store persistente. Qual é o comportamento esperado se a chave de identificação não for definida explicitamente?",
-    "codigo_xml_ou_dw": "<idempotent-message-validator\n  id=\"IDV_01\"\n  objectStore=\"myOS\"/>",
+    "enunciado": "Um desenvolvedor precisa garantir que mensagens duplicadas não sejam processadas em um fluxo que consome requisições HTTP. Ele configurou o Idempotent Message Validator referenciando uma Object Store. Qual é o comportamento padrão se o atributo idExpression não for definido explicitamente e uma mensagem duplicada for detectada?",
+    "codigo_xml_ou_dw": "<idempotent-message-validator\n  doc:name=\"Idempotent Validator\"\n  objectStore=\"myOS\"/>",
     "alternativas": [
-      "A) O componente falha na inicialização do app.",
-      "B) O Mule usa o payload como chave padrão.",
-      "C) O Mule usa o ID da mensagem (message ID) como chave.",
-      "D) O componente ignora a validação."
+      "A) O componente falha na inicialização porque idExpression é obrigatório.",
+      "B) Usa #[correlationId] como chave padrão e lança MULE:DUPLICATE_MESSAGE se já existir.",
+      "C) Ignora silenciosamente a mensagem duplicada sem lançar erro.",
+      "D) Usa um hash SHA-256 automático do payload inteiro por padrão."
     ],
-    "resposta_correta": "C) O Mule usa o ID da mensagem (message ID) como chave.",
-    "explicacao_oficial": "Se o atributo 'idExpression' não for fornecido, o Idempotent Message Validator utiliza o ID da mensagem (message ID) do Mule Event como a chave padrão para verificar a duplicidade na Object Store.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/idempotent-message-validator"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Um fluxo utiliza um Scatter-Gather para chamar três APIs externas. Uma das rotas falha com um erro de timeout. Considerando que a configuração padrão é mantida, o que acontece com o processamento do Scatter-Gather?",
-    "codigo_xml_ou_dw": "<scatter-gather>\n  <route>...</route>\n  <route>...</route>\n</scatter-gather>",
-    "alternativas": [
-      "A) O Scatter-Gather continua e retorna sucesso.",
-      "B) O Scatter-Gather lança um CompositeRoutingException.",
-      "C) Apenas a rota com erro é abortada.",
-      "D) O fluxo tenta reprocessar a rota falha."
-    ],
-    "resposta_correta": "B) O Scatter-Gather lança um CompositeRoutingException.",
-    "explicacao_oficial": "O Scatter-Gather é síncrono e bloqueante. Se qualquer uma das rotas falhar, ele lança um CompositeRoutingException, que encapsula os erros de todas as rotas que falharam, interrompendo o fluxo principal.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/scatter-gather-component"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Você precisa otimizar a performance de um processamento em lote que lê um arquivo grande. Qual estratégia de streaming deve ser aplicada para evitar OutOfMemoryError?",
-    "codigo_xml_ou_dw": "<file:read\n  config-ref=\"File_Config\"\n  path=\"large.csv\"\n  outputMimeType=\"text/csv\"/>",
-    "alternativas": [
-      "A) Aumentar o Heap Size da JVM.",
-      "B) Usar Repeatable File Store Streaming.",
-      "C) Usar Non-repeatable Streaming.",
-      "D) Carregar o arquivo inteiro em uma variável."
-    ],
-    "resposta_correta": "B) Usar Repeatable File Store Streaming.",
-    "explicacao_oficial": "O Repeatable File Store Streaming armazena o stream em disco, permitindo que ele seja lido múltiplas vezes sem carregar todo o conteúdo na memória, sendo a opção mais segura para arquivos grandes.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/streaming"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Em um cenário de alta concorrência usando VM Queues, qual é a diferença fundamental entre o modo 'Persistent' e 'Transient' na configuração do conector VM?",
-    "codigo_xml_ou_dw": "<vm:queue\n  queueName=\"myQueue\"\n  queueType=\"PERSISTENT\"/>",
-    "alternativas": [
-      "A) Transient é mais lento que Persistent.",
-      "B) Persistent garante entrega após restart.",
-      "C) Transient suporta transações XA.",
-      "D) Não há diferença de performance."
-    ],
-    "resposta_correta": "B) Persistent garante entrega após restart.",
-    "explicacao_oficial": "Filas do tipo Persistent salvam as mensagens em disco, garantindo que elas sobrevivam a reinicializações do Mule Runtime, enquanto Transient mantém as mensagens apenas na memória.",
-    "url_referencia": "https://docs.mulesoft.com/vm-connector/2.0/vm-connector-reference"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Um fluxo utiliza um Parallel For Each para processar 100 registros. Dentro do escopo, há um componente que grava em um Object Store. O desenvolvedor percebe que, sob alta carga, o processamento falha com 'LockingException'. Qual configuração deve ser ajustada?",
-    "codigo_xml_ou_dw": "<parallel-foreach\n  maxConcurrency=\"10\">\n  <os:store key=\"#[vars.id]\" />\n</parallel-foreach>",
-    "alternativas": [
-      "A) Aumentar o maxConcurrency para 50.",
-      "B) Utilizar um VM Queue com transação.",
-      "C) Implementar um Until Successful no store.",
-      "D) Reduzir o maxConcurrency e usar um lock explícito."
-    ],
-    "resposta_correta": "C) Implementar um Until Successful no store.",
-    "explicacao_oficial": "O Object Store v2 possui limites de concorrência. O Until Successful permite retentativas automáticas com backoff exponencial, tratando falhas temporárias de lock causadas por contenção de recursos.",
-    "url_referencia": "https://docs.mulesoft.com/object-store/osv2-guide"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Você está usando o Caching Strategy com um Object Store customizado. O requisito é que os dados expirem após 1 hora, mas o cache deve ser limpo se o payload for maior que 5MB. Como configurar?",
-    "codigo_xml_ou_dw": "<ee:object-store-caching-strategy\n  keyGenerationExpression=\"#[payload.id]\"\n  entryTtl=\"3600\" />",
-    "alternativas": [
-      "A) Usar um Filter antes do Cache.",
-      "B) Configurar maxEntries no cache.",
-      "C) O cache não suporta limite de tamanho.",
-      "D) Usar um Custom Key Generator."
-    ],
-    "resposta_correta": "A) Usar um Filter antes do Cache.",
-    "explicacao_oficial": "O Caching Strategy do Mule não possui um parâmetro nativo para tamanho do payload (bytes). Deve-se usar um componente Filter para descartar mensagens que excedam o limite antes de atingir o Cache.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/cache-scope"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Um fluxo consome de uma VM Queue transacional. Se uma exceção ocorre no processamento, a mensagem deve retornar à fila, mas apenas 3 vezes antes de ser enviada para uma Dead Letter Queue. Como configurar?",
-    "codigo_xml_ou_dw": "<vm:listener\n  queueName=\"process\" />\n<error-handler>\n  <on-error-propagate />\n</error-handler>",
-    "alternativas": [
-      "A) Usar Until Successful no listener.",
-      "B) Configurar maxRedelivery no VM Config.",
-      "C) Usar um contador no Object Store.",
-      "D) VM não suporta Dead Letter Queues."
-    ],
-    "resposta_correta": "B) Configurar maxRedelivery no VM Config.",
-    "explicacao_oficial": "O conector VM permite configurar a propriedade maxRedelivery diretamente na configuração do listener ou da fila, gerenciando automaticamente o roteamento para DLQ após o limite de tentativas.",
-    "url_referencia": "https://docs.mulesoft.com/vm-connector/2.3/vm-connector-reference"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Ao usar Streaming em um componente File Read, o payload é lido como Repeatable Stream. Se você tentar acessar o payload duas vezes em componentes diferentes, o que acontece?",
-    "codigo_xml_ou_dw": "<file:read path=\"data.csv\" />\n<logger message=\"#[payload]\" />\n<logger message=\"#[payload]\" />",
-    "alternativas": [
-      "A) Erro de Stream Closed.",
-      "B) O payload é lido novamente do disco.",
-      "C) O segundo logger imprime vazio.",
-      "D) O Mule bufferiza o stream automaticamente."
-    ],
-    "resposta_correta": "D) O Mule bufferiza o stream automaticamente.",
-    "explicacao_oficial": "Por padrão, o Mule 4 utiliza 'Repeatable Streams'. Quando um stream é lido, o runtime bufferiza o conteúdo em memória ou disco (conforme configuração), permitindo múltiplas leituras sem erro.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/streaming"
-  },
-  {
-    "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Um fluxo Mule processa eventos financeiros em alta concorrência. Foi configurado um Idempotent Message Validator dentro de um Object Store v2 compartilhado. Ocorre um cenário onde duas requisições idênticas chegam exatamente no mesmo milissegundo. O Object Store v2 possui TTL configurado. Qual comportamento é esperado durante a contenção de escrita?",
-    "codigo_xml_ou_dw": "<ee:idempotent-message-transformer\n  idempotentStore=\"osv2\"\n  value=\"#[vars.txId]\"/>",
-    "alternativas": [
-      "A) Apenas uma requisição prossegue;\na outra gera Idempotent\nMessaging Exception.",
-      "B) Ambas as requisições prosseguem\njá que OSv2 lida com lock\ndistribuído nativo.",
-      "C) Ocorrerá deadlock na thread\npool do Mule Runtime.\n",
-      "D) A segunda requisição sobrescreve\no valor anterior sem\nlançar exceção."
-    ],
-    "resposta_correta": "A) Apenas uma requisição prossegue; a outra gera Idempotent Messaging Exception.",
-    "explicacao_oficial": "O Idempotent Message Validator no OSv2 usa operações atômicas, mas alta concorrência pode gerar race conditions tratadas lançando uma exceção de mensagem duplicada se o lock pessimista falhar.",
+    "resposta_correta": "B) Usa #[correlationId] como chave padrão e lança MULE:DUPLICATE_MESSAGE se já existir.",
+    "explicacao_oficial": "Conforme a documentação oficial do Idempotent Message Validator, o valor padrão de idExpression é #[correlationId] e, quando um ID duplicado é recebido, o validador lança um erro do tipo MULE:DUPLICATE_MESSAGE.",
     "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/idempotent-message-validator"
   },
   {
     "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Um desenvolvedor está utilizando um Until Successful scope para garantir a entrega de payloads a um serviço instável. A propriedade maxRetries está configurada como 3 e millisBetweenRetries como 5000. Durante o teste, a terceira tentativa falha. O que acontece com o payload original e qual exceção é propagada?",
-    "codigo_xml_ou_dw": "<until-successful\n  maxRetries=\"3\"\n  millisBetweenRetries=\"5000\">\n  <http:request\n    path=\"/pay\"\n    config-ref=\"HTTP\"/>\n</until-successful>",
+    "enunciado": "Um fluxo utiliza um Scatter-Gather para chamar três APIs externas em paralelo. Uma das rotas falha com erro de timeout, enquanto as outras duas concluem com sucesso. Considerando a configuração padrão sem Error Handlers internos nas rotas, o que acontece?",
+    "codigo_xml_ou_dw": "<scatter-gather>\n  <route>...</route>\n  <route>...</route>\n  <route>...</route>\n</scatter-gather>",
     "alternativas": [
-      "A) O payload é retornado como\nfoi gerado na última\ntentativa falha.",
-      "B) O payload original fornecido\nantes do Until Successful\né propagado com\nRETRY_EXHAUSTED.",
-      "C) Uma exceção do tipo\nUNTIL_SUCCESSFUL_EXHAUSTED\né lançada e o payload\né perdido.",
-      "D) O fluxo continua com payload\nvazio e status 200 OK."
+      "A) O Scatter-Gather retorna apenas os payloads das duas rotas que tiveram sucesso.",
+      "B) O Scatter-Gather aguarda todas as rotas terminarem e lança o erro MULE:COMPOSITE_ROUTING.",
+      "C) O Scatter-Gather cancela imediatamente as rotas em andamento no instante em que a primeira falha.",
+      "D) O fluxo tenta reprocessar automaticamente apenas a rota que falhou."
     ],
-    "resposta_correta": "B) O payload original fornecido antes do Until Successful é propagado com RETRY_EXHAUSTED.",
-    "explicacao_oficial": "Se o Until Successful esgotar todas as tentativas, ele falha e restaura o payload original que entrou no escopo, propagando a exceção Retry Exhausted.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/until-successful-scope"
+    "resposta_correta": "B) O Scatter-Gather aguarda todas as rotas terminarem e lança o erro MULE:COMPOSITE_ROUTING.",
+    "explicacao_oficial": "De acordo com a documentação oficial do Scatter-Gather Router, se uma ou mais rotas falharem, o componente aguarda a conclusão de todas as rotas paralelas e então lança um erro MULE:COMPOSITE_ROUTING contendo as exceções de cada rota que falhou.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept"
   },
   {
     "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Para otimizar a leitura de um arquivo CSV de 500MB, um engenheiro configurou um componente File Read usando Object Streaming com transient store. O arquivo é lido dentro de um Batch Job. Qual cuidado crítico deve ser tomado para evitar OutOfMemoryError no streaming?",
-    "codigo_xml_ou_dw": "<file:read\n  path=\"large.csv\"\n  outputMimeType=\n  \"application/csv;\n  streaming=true\"/>",
+    "enunciado": "Você precisa otimizar a performance e o consumo de memória de um fluxo Mule 4 que lê arquivos CSV de vários gigabytes e precisa acessar o stream em mais de um componente sequencial sem causar OutOfMemoryError. Qual estratégia de streaming é utilizada por padrão no Mule 4 e como ela opera?",
+    "codigo_xml_ou_dw": "<file:read\n  config-ref=\"File_Config\"\n  path=\"large.csv\">\n  <repeatable-file-store-stream\n    inMemorySize=\"512\"\n    bufferUnit=\"KB\"/>\n</file:read>",
     "alternativas": [
-      "A) O payload deve ser transformado\nem JSON antes de entrar\nno Batch Step.",
-      "B) Operações que exigem\nmaterialização total\n(como groupBy ou\norderBy) devem ser\nevitadas no stream.",
-      "C) O File Read deve ser\nenvolvido em um\nTransactional Scope.",
-      "D) O streaming do File Read\nfunciona apenas se\no Object Store for\nconfigurado em disco."
+      "A) Non-repeatable Stream, que exige aumentar o Heap Size da JVM.",
+      "B) Repeatable File Store Stream, que mantém um buffer em memória até o limite configurado e faz overflow para arquivo temporário em disco.",
+      "C) Repeatable In-Memory Stream, que grava automaticamente em disco quando excede o buffer.",
+      "D) Direct Socket Stream, que bloqueia múltiplas leituras do payload."
     ],
-    "resposta_correta": "B) Operações que exigem materialização total (como groupBy ou orderBy) devem ser evitadas no stream.",
-    "explicacao_oficial": "Streams requerem acesso sequencial. Funções DataWeave que exigem leitura aleatória ou agrupamento total forçam a materialização do stream na memória RAM.",
+    "resposta_correta": "B) Repeatable File Store Stream, que mantém um buffer em memória até o limite configurado e faz overflow para arquivo temporário em disco.",
+    "explicacao_oficial": "Segundo a documentação oficial de Streaming no Mule 4, a estratégia padrão é o Repeatable File Store Stream (configurável com inMemorySize). Ela mantém dados em memória até o limite definido e despeja o excedente em disco, permitindo múltiplas leituras de grandes volumes sem esgotar a RAM.",
     "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about"
   },
   {
     "secao": "Implement Performant and Reliable Mule Applications",
-    "enunciado": "Um fluxo utiliza um Cache Scope para armazenar respostas de uma API legada lenta. O target variable foi definido e a chave do cache usa atributos do HTTP. Após algumas horas, os dados na API externa mudam, mas o cache continua retornando dados antigos. Qual configuração garante a invalidação baseada em tempo?",
-    "codigo_xml_ou_dw": "<ee:object-store-caching-strategy\n  key-expression=\n  \"#[attributes.uriParams.id]\"\n  objectStore-ref=\"os\"\n  />",
+    "enunciado": "Em uma arquitetura Mule 4 usando VM Connector para comunicação assíncrona entre fluxos, qual é a diferença oficial de comportamento entre filas do tipo TRANSIENT e PERSISTENT?",
+    "codigo_xml_ou_dw": "<vm:config name=\"VM_Config\">\n  <vm:queues>\n    <vm:queue queueName=\"orders\"\n      queueType=\"PERSISTENT\"/>\n  </vm:queues>\n</vm:config>",
     "alternativas": [
-      "A) Configurar a propriedade\nttl e timeUnit na\nestratégia de cache.",
-      "B) Adicionar um componente\nClear Cache Scope\nmanualmente no fluxo.",
-      "C) Usar um Object Store\ncustomizado e expirar\nvia Java Bean.",
-      "D) Desabilitar a transacionalidade\ndo Object Store\nsubjacente."
+      "A) Filas TRANSIENT são mais lentas que PERSISTENT, mas suportam payloads maiores.",
+      "B) Filas TRANSIENT são mais rápidas mas voláteis (dados são perdidos se o runtime falhar/reiniciar), enquanto PERSISTENT armazena dados em disco (ou memória compartilhada em cluster).",
+      "C) Filas PERSISTENT não suportam múltiplos consumidores concorrentes.",
+      "D) Filas TRANSIENT compartilham mensagens entre diferentes workers no CloudHub sem Object Store."
     ],
-    "resposta_correta": "A) Configurar a propriedade ttl e timeUnit na estratégia de cache.",
-    "explicacao_oficial": "Para expirar entradas no Caching Strategy com base no tempo, os atributos timeToLive e timeUnit devem ser configurados na estratégia de cache correspondente.",
+    "resposta_correta": "B) Filas TRANSIENT são mais rápidas mas voláteis (dados são perdidos se o runtime falhar/reiniciar), enquanto PERSISTENT armazena dados em disco (ou memória compartilhada em cluster).",
+    "explicacao_oficial": "Conforme a documentação oficial do VM Connector, filas TRANSIENT são voláteis e mais rápidas (as mensagens são perdidas se o sistema falhar ou reiniciar), enquanto filas PERSISTENT são mais lentas, mas garantem a persistência das mensagens em disco (ou no cluster).",
+    "url_referencia": "https://docs.mulesoft.com/vm-connector/latest/"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Uma aplicação implantada no CloudHub utiliza Object Store v2 (OSv2) com entryTtl configurado para 3600 segundos (1 hora). A equipe nota que as chaves permanecem acessíveis mesmo após 1 hora se continuarem sendo lidas periodicamente pelo fluxo. Qual configuração do conector Object Store explica esse comportamento (Rolling TTL vs Static TTL)?",
+    "codigo_xml_ou_dw": "<os:object-store name=\"My_OS\"\n  persistent=\"true\"\n  entryTtl=\"3600\"\n  entryTtlUnit=\"SECONDS\"\n  expirationInterval=\"1\"\n  expirationIntervalUnit=\"MINUTES\"/>",
+    "alternativas": [
+      "A) No OSv2, se o expirationInterval for menor que o entryTtl, o TTL torna-se dinâmico (Rolling TTL), renovando o tempo de vida a cada acesso.",
+      "B) O OSv2 ignora o atributo entryTtl quando persistent=\"true\".",
+      "C) O TTL só funciona no CloudHub se maxEntries for igual a 1.",
+      "D) É necessário chamar os:clear manualmente para que o TTL entre em vigor."
+    ],
+    "resposta_correta": "A) No OSv2, se o expirationInterval for menor que o entryTtl, o TTL torna-se dinâmico (Rolling TTL), renovando o tempo de vida a cada acesso.",
+    "explicacao_oficial": "De acordo com o guia oficial do Object Store v2 (OSv2 Guide), quando o valor de expirationInterval é menor que o entryTtl, o TTL comporta-se como Rolling TTL (o prazo é estendido toda vez que a chave é acessada). Para Static TTL, o expirationInterval deve ser maior ou igual ao entryTtl.",
+    "url_referencia": "https://docs.mulesoft.com/object-store/latest/osv2-guide"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Você está utilizando um Cache Scope (<ee:cache>) em um fluxo Mule 4 e precisa garantir que apenas requisições cujo cabeçalho HTTP 'x-cacheable' seja igual a 'true' utilizem o mecanismo de cache; as demais devem executar os processadores internos sem consultar nem gravar no cache. Qual configuração atende a esse requisito?",
+    "codigo_xml_ou_dw": "<ee:cache doc:name=\"Cache\"\n  cachingStrategy-ref=\"Strategy\"\n  filterExpression=\"#[attributes.headers['x-cacheable'] == 'true']\">\n  <http:request config-ref=\"API\" path=\"/items\"/>\n</ee:cache>",
+    "alternativas": [
+      "A) Configurar o atributo filterExpression diretamente no elemento <ee:cache>.",
+      "B) Configurar maxEntries=\"0\" na estratégia de cache.",
+      "C) O Cache Scope não possui filtro nativo; é obrigatório duplicar o fluxo com um Choice Router.",
+      "D) Usar um Idempotent Message Validator dentro do Cache Scope."
+    ],
+    "resposta_correta": "A) Configurar o atributo filterExpression diretamente no elemento <ee:cache>.",
+    "explicacao_oficial": "Conforme a documentação oficial do Cache Scope, o elemento <ee:cache> possui o atributo nativo filterExpression. Se a expressão DataWeave avaliar como true, o Mule aplica a estratégia de cache; se avaliar como false, o Mule executa os processadores normalmente sem ler nem salvar no cache.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/cache-scope"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Um fluxo consome mensagens de um <vm:listener> transacional. Se ocorrer uma exceção durante o processamento, a mensagem deve sofrer rollback e ser reentregue no máximo 3 vezes antes de lançar um erro de esgotamento para tratamento em uma Dead Letter Queue (DLQ). Como configurar esse limite nativamente no Mule 4?",
+    "codigo_xml_ou_dw": "<vm:listener config-ref=\"VM_Config\"\n  queueName=\"orders\"\n  transactionalAction=\"ALWAYS_BEGIN\">\n  <redelivery-policy\n    maxRedeliveryCount=\"3\"/>\n</vm:listener>",
+    "alternativas": [
+      "A) Envolver o <vm:listener> dentro de um escopo Until Successful.",
+      "B) Configurar o elemento <redelivery-policy maxRedeliveryCount=\"3\"/> no source (<vm:listener>) e tratar o erro MULE:REDELIVERY_EXHAUSTED no Error Handler.",
+      "C) Criar um contador manual em variável de fluxo (vars.retryCount).",
+      "D) Fontes baseadas em conector VM não suportam Redelivery Policy no Mule 4."
+    ],
+    "resposta_correta": "B) Configurar o elemento <redelivery-policy maxRedeliveryCount=\"3\"/> no source (<vm:listener>) e tratar o erro MULE:REDELIVERY_EXHAUSTED no Error Handler.",
+    "explicacao_oficial": "De acordo com a documentação oficial de Redelivery Policy no Mule Runtime, qualquer event source que suporte transações/ Fontes de mensagens (como VM Listener, JMS Listener) pode configurar <redelivery-policy maxRedeliveryCount=\"N\"/>. Quando o limite é excedido, o runtime lança MULE:REDELIVERY_EXHAUSTED.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/redelivery-policy"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Ao usar a configuração padrão de Streaming em um componente File Read no Mule 4, o payload é disponibilizado como um Repeatable Stream. Se dois componentes consecutivos (ou duas threads paralelas em um Scatter-Gather) lerem o mesmo payload, o que acontece?",
+    "codigo_xml_ou_dw": "<file:read path=\"data.csv\" config-ref=\"File_Config\"/>\n<logger message=\"#[payload]\" />\n<logger message=\"#[payload]\" />",
+    "alternativas": [
+      "A) O segundo componente falha com erro de Stream Closed.",
+      "B) O arquivo original é reaberto via rede pelo conector em cada leitura.",
+      "C) O segundo logger imprime null porque o stream foi consumido.",
+      "D) O Mule permite que o stream seja lido múltiplas vezes e de forma concorrente graças ao buffer do Repeatable Stream."
+    ],
+    "resposta_correta": "D) O Mule permite que o stream seja lido múltiplas vezes e de forma concorrente graças ao buffer do Repeatable Stream.",
+    "explicacao_oficial": "Conforme a documentação oficial de Streaming no Mule 4, Repeatable Streams são a configuração padrão e permitem que um stream seja consumido mais de uma vez e até simultaneamente por múltiplos componentes (como em um Scatter-Gather), gerenciando o buffer em memória e disco automaticamente.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Um fluxo Mule processa transações financeiras e utiliza um Idempotent Message Validator configurado para extrair o ID da transação via DataWeave e armazená-lo em um Object Store customizado. Se duas mensagens com o mesmo txId chegarem ao validador, qual erro específico deve ser capturado no Error Handler para retornar HTTP 409 Conflict?",
+    "codigo_xml_ou_dw": "<idempotent-message-validator\n  idExpression=\"#[payload.txId]\"\n  objectStore=\"txObjectStore\"/>",
+    "alternativas": [
+      "A) MULE:DUPLICATE_MESSAGE",
+      "B) OS:KEY_ALREADY_EXISTS",
+      "C) MULE:VALIDATION",
+      "D) HTTP:CONFLICT"
+    ],
+    "resposta_correta": "A) MULE:DUPLICATE_MESSAGE",
+    "explicacao_oficial": "De acordo com a documentação oficial do Idempotent Message Validator, quando o componente detecta que o valor resultante de idExpression já está presente no Object Store, ele interrompe o processamento e lança o erro tipado MULE:DUPLICATE_MESSAGE.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/idempotent-message-validator"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Um desenvolvedor está utilizando um escopo Until Successful para garantir a entrega de payloads a um serviço HTTP instável, configurando maxRetries=\"3\" e millisBetweenRetries=\"5000\". Se a chamada inicial e todas as 3 retentativas falharem, qual exceção é propagada pelo escopo?",
+    "codigo_xml_ou_dw": "<until-successful\n  maxRetries=\"3\"\n  millisBetweenRetries=\"5000\">\n  <http:request\n    path=\"/pay\"\n    config-ref=\"HTTP\"/>\n</until-successful>",
+    "alternativas": [
+      "A) MULE:CONNECTIVITY sem encapsulamento.",
+      "B) MULE:RETRY_EXHAUSTED, contendo o erro da última tentativa como causa.",
+      "C) MULE:REDELIVERY_EXHAUSTED e o payload é descartado.",
+      "D) O fluxo continua normalmente com payload nulo."
+    ],
+    "resposta_correta": "B) MULE:RETRY_EXHAUSTED, contendo o erro da última tentativa como causa.",
+    "explicacao_oficial": "Conforme a documentação oficial do Until Successful Scope, se os processadores dentro do escopo continuarem falhando até esgotar o número configurado em maxRetries, o escopo falha e propaga o erro MULE:RETRY_EXHAUSTED.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/until-successful-scope"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Para otimizar a leitura e transformação de um arquivo CSV de 500MB com DataWeave em um fluxo Mule 4, o desenvolvedor habilitou streaming no leitor (`streaming=true`). Qual cuidado crítico deve ser tomado no script DataWeave para manter o processamento em streaming do início ao fim e evitar OutOfMemoryError?",
+    "codigo_xml_ou_dw": "<file:read\n  path=\"large.csv\"\n  outputMimeType=\"application/csv; streaming=true\"/>",
+    "alternativas": [
+      "A) Converter o payload para XML antes do Transform Message.",
+      "B) Evitar operações que exigem acesso aleatório ou leitura integral na memória (como orderBy, groupBy, distinctBy ou índices negativos) e incluir deferred=true na saída.",
+      "C) Envolver o File Read em um Transactional Scope.",
+      "D) Desativar o Repeatable Stream obrigatoriamente."
+    ],
+    "resposta_correta": "B) Evitar operações que exigem acesso aleatório ou leitura integral na memória (como orderBy, groupBy, distinctBy ou índices negativos) e incluir deferred=true na saída.",
+    "explicacao_oficial": "De acordo com a documentação oficial de Streaming no Mule Runtime e DataWeave, streams são processados sequencialmente; operações que precisam inspecionar toda a coleção (como orderBy ou groupBy) forçam a materialização completa na memória.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/streaming-about"
+  },
+  {
+    "secao": "Implement Performant and Reliable Mule Applications",
+    "enunciado": "Um fluxo utiliza um Cache Scope com uma Caching Strategy que referencia um Object Store customizado. Após algumas horas, os dados na API externa mudam, mas o cache continua retornando dados antigos indefinidamente. Onde e com quais atributos deve ser configurada a expiração baseada em tempo?",
+    "codigo_xml_ou_dw": "<ee:object-store-caching-strategy\n  name=\"Caching_Strategy\"\n  keyGenerationExpression=\"#[attributes.uriParams.id]\">\n  <os:private-object-store\n    entryTtl=\"15\"\n    entryTtlUnit=\"MINUTES\"\n    expirationInterval=\"5\"\n    expirationIntervalUnit=\"MINUTES\"/>\n</ee:object-store-caching-strategy>",
+    "alternativas": [
+      "A) Configurar entryTtl, entryTtlUnit e expirationInterval no Object Store associado à Caching Strategy.",
+      "B) Configurar o atributo timeout diretamente na tag <ee:cache>.",
+      "C) Usar um componente Clear Cache Scope em todas as requisições GET.",
+      "D) Desabilitar o atributo persistent do Object Store, pois caches persistentes nunca expiram."
+    ],
+    "resposta_correta": "A) Configurar entryTtl, entryTtlUnit e expirationInterval no Object Store associado à Caching Strategy.",
+    "explicacao_oficial": "Conforme a documentação oficial do Cache Scope, o tempo de vida dos itens em cache é controlado pelo Object Store subjacente configurado na Caching Strategy através dos parâmetros entryTtl, entryTtlUnit e expirationInterval.",
     "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/cache-scope"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
-    "enunciado": "Uma aplicação Mule 4 precisa decifrar credenciais sensíveis armazenadas no arquivo 'credentials-prod.yaml'. O desenvolvedor criptografou os valores utilizando a ferramenta de linha de comando Secure Properties Tool com o seguinte comando:\njava -jar secure-properties-tool.jar string encrypt AES CBC my-secret-key \"DB_P@ssw0rd\"\n\nDurante o bootstrap da aplicação no ambiente de homologação, o runtime falha ao inicializar com a exceção:\norg.mule.runtime.core.api.config.ConfigurationException: Couldn't decrypt property 'db.password'.\n\nConsidere a configuração do conector presente na aplicação:",
+    "enunciado": "Uma aplicação Mule 4 precisa decifrar credenciais sensíveis armazenadas no arquivo 'credentials-prod.yaml'. O desenvolvedor criptografou os valores utilizando a ferramenta de linha de comando Secure Properties Tool com o seguinte comando:\njava -cp secure-properties-tool.jar com.mulesoft.tools.SecurePropertiesTool string encrypt AES CBC my-secret-key \"DB_P@ssw0rd\"\n\nDurante o bootstrap da aplicação, o runtime falha com:\nCouldn't decrypt property 'db.password'.\n\nConsidere a configuração XML abaixo e identifique a causa:",
     "codigo_xml_ou_dw": "<secure-properties:config\n  name=\"Secure_Props\"\n  file=\"credentials-${mule.env}.yaml\"\n  key=\"${enc.key}\">\n</secure-properties:config>",
     "alternativas": [
-      "A) A propriedade key deve ser informada obrigatoriamente via System Property no formato -Dsecure.key, não sendo permitido o uso de property placeholders.",
-      "B) O elemento secure-properties:config deve declarar explicitamente algorithm=\"AES\" e mode=\"CBC\", pois seus valores default são Blowfish e CBC.",
-      "C) O arquivo credentials-prod.yaml deve estar localizado no diretório /src/main/resources/secure/ para que o módulo consiga aplicar a chave de decriptografia.",
-      "D) É obrigatório adicionar useRandomIV=\"true\" tanto no comando CLI quanto no XML de configuração ao utilizar o algoritmo AES em modo CBC."
+      "A) A propriedade key não aceita property placeholders como ${enc.key}.",
+      "B) O elemento <secure-properties:config> precisa do elemento filho <secure-properties:encrypt algorithm=\"AES\" mode=\"CBC\"/> se o padrão for alterado ou deve coincidir com o algoritmo/modo usado na criptografia.",
+      "C) O arquivo credentials-prod.yaml deve estar obrigatoriamente na pasta /src/main/resources/secure/.",
+      "D) O prefixo ![value] não é suportado em arquivos YAML, apenas em .properties."
     ],
-    "resposta_correta": "B) O elemento secure-properties:config deve declarar explicitamente algorithm=\"AES\" e mode=\"CBC\", pois seus valores default são Blowfish e CBC.",
-    "explicacao_oficial": "De acordo com a documentação oficial da MuleSoft sobre o Secure Configuration Properties Module, os valores default para os atributos do secure-properties:config são algorithm=\"Blowfish\" e mode=\"CBC\". Como o desenvolvedor usou a CLI especificando 'AES CBC', ao inicializar a aplicação o runtime tenta decifrar a string AES utilizando o algoritmo padrão Blowfish, gerando erro de decriptografia/padding. Para corrigir, deve-se declarar explicitamente algorithm=\"AES\" mode=\"CBC\" no elemento XML.",
+    "resposta_correta": "B) O elemento <secure-properties:config> precisa do elemento filho <secure-properties:encrypt algorithm=\"AES\" mode=\"CBC\"/> se o padrão for alterado ou deve coincidir com o algoritmo/modo usado na criptografia.",
+    "explicacao_oficial": "De acordo com a documentação oficial de Secure Configuration Properties, o algoritmo e modo configurados em <secure-properties:encrypt algorithm=\"...\" mode=\"...\"/> dentro de <secure-properties:config> devem corresponder exatamente ao algoritmo e modo utilizados no comando do Secure Properties Tool.",
     "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
-    "enunciado": "Uma aplicação Mule 4 precisa consumir uma API financeira externa de alta segurança que exige Two-Way TLS (mTLS). O desenvolvedor configurou o componente HTTP Request com a seguinte configuração de TLS Context:\n\nAo executar a chamada para o endpoint externo, o fluxo falha com o seguinte erro retornado pelo handshake:\nSSLHandshakeException: Received fatal alert: bad_certificate\n\nO administrador do servidor parceiro informa que a conexão TLS foi encerrada porque o cliente MuleSoft não apresentou um certificado digital válido durante a negociação. Qual modificação deve ser realizada para estabelecer o mTLS?",
+    "enunciado": "Uma aplicação Mule 4 precisa consumir uma API financeira externa que exige Two-Way TLS (mTLS). O desenvolvedor configurou o HTTP Request com o TLS Context abaixo, mas o handshake falha com 'bad_certificate' porque o cliente Mule não apresentou certificado ao servidor remoto. Qual ajuste é necessário?",
     "codigo_xml_ou_dw": "<tls:context name=\"TLS_Context\">\n  <tls:trust-store\n    path=\"partner-trust.p12\"\n    password=\"${trust.pass}\"\n    type=\"pkcs12\"/>\n</tls:context>",
     "alternativas": [
-      "A) Adicionar o atributo insecure=\"false\" no elemento tls:context e enabledProtocols=\"TLSv1.3\".",
-      "B) Adicionar um elemento aninhado tls:key-store ao tls:context contendo o par de chaves privada e pública da aplicação MuleSoft assinado por uma CA confiável.",
-      "C) Mudar o atributo type da truststore para JKS, pois PKCS12 não oferece suporte a negociações mTLS pelo conector HTTP.",
+      "A) Adicionar o atributo insecure=\"false\" no elemento tls:context.",
+      "B) Adicionar um elemento <tls:key-store> ao <tls:context> contendo a chave privada e o certificado da aplicação Mule.",
+      "C) Mudar o atributo type da truststore para JKS, pois PKCS12 não suporta mTLS.",
       "D) Adicionar a flag requireClientAuthentication=\"true\" dentro de tls:trust-store."
     ],
-    "resposta_correta": "B) Adicionar um elemento aninhado tls:key-store ao tls:context contendo o par de chaves privada e pública da aplicação MuleSoft assinado por uma CA confiável.",
-    "explicacao_oficial": "No Two-Way TLS (mTLS), o cliente deve autenticar o servidor (usando uma Truststore) e o servidor deve autenticar o cliente. Para que o HTTP Request Connector apresente o certificado da aplicação Mule ao servidor remoto, é mandatório configurar uma Keystore (tls:key-store) contendo a chave privada e o certificado do cliente. A configuração atual possui apenas trust-store (One-Way TLS), impedindo o envio do certificado de cliente na fase de Certificate Request do handshake.",
+    "resposta_correta": "B) Adicionar um elemento <tls:key-store> ao <tls:context> contendo a chave privada e o certificado da aplicação Mule.",
+    "explicacao_oficial": "Conforme a documentação oficial de TLS Configuration no Mule Runtime, para conexões Two-Way TLS (mTLS) em um cliente (HTTP Request), o <tls:context> deve conter tanto o <tls:trust-store> (para validar o servidor) quanto o <tls:key-store> (contendo a chave privada e o certificado digital que identifica o cliente Mule).",
     "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
-    "enunciado": "Um fluxo Mule é responsável por ler arquivos .pgp recebidos via SFTP de um fornecedor e decifrá-los usando a operação crypto:pgp-decrypt do Mule Cryptography Module. Durante os testes, o fluxo falha com o erro:\nCRYPTO:DECRYPTION: Can not verify signature: No public key found for key ID 0x3A2B1C0D.\n\nConstatou-se que o parceiro realiza a assinatura digital do conteúdo com sua própria chave privada antes de criptografar o arquivo com a chave pública da aplicação Mule.\n\nQual ajuste na configuração do Cryptography Module resolve o erro mantendo a validação criptográfica da origem?",
-    "codigo_xml_ou_dw": "<crypto:pgp-decrypt\n  config-ref=\"PGP_Config\"\n  privateKeyId=\"0x9F8E7D6C\">\n</crypto:pgp-decrypt>",
+    "enunciado": "Um fluxo Mule lê arquivos .pgp de um parceiro e utiliza a operação <crypto:pgp-decrypt> do Cryptography Module. Durante a execução, ocorre o erro:\nCan not verify signature: No public key found for key ID 0x3A2B1C0D.\n\nO parceiro assina digitalmente o arquivo com sua chave privada antes de criptografá-lo com a chave pública da aplicação Mule. Qual configuração resolve o erro mantendo a verificação da assinatura?",
+    "codigo_xml_ou_dw": "<crypto:pgp-config name=\"PGP_Config\"\n  publicKeyRingFileName=\"pubring.gpg\"\n  secretKeyRingFileName=\"secring.gpg\"/>",
     "alternativas": [
-      "A) Configurar o atributo validateSignature=\"false\" na operação crypto:pgp-decrypt para ignorar a assinatura.",
-      "B) Adicionar o parâmetro signKeyId=\"0x3A2B1C0D\" dentro da operação crypto:pgp-decrypt.",
-      "C) Adicionar a chave pública do fornecedor (Key ID 0x3A2B1C0D) ao arquivo de publicKeyRingFileName referenciado no PGP_Config global.",
-      "D) Importar o certificado X.509 do parceiro para a JVM cacerts da máquina onde o Mule runtime está em execução."
+      "A) Remover o secretKeyRingFileName da configuração global.",
+      "B) Importar a chave pública do parceiro (0x3A2B1C0D) no arquivo configurado em publicKeyRingFileName e declará-la em <crypto:pgp-keys>.",
+      "C) Substituir <crypto:pgp-decrypt> por <crypto:jce-decrypt>.",
+      "D) Importar o certificado X.509 do parceiro na cacerts padrão da JVM."
     ],
-    "resposta_correta": "C) Adicionar a chave pública do fornecedor (Key ID 0x3A2B1C0D) ao arquivo de publicKeyRingFileName referenciado no PGP_Config global.",
-    "explicacao_oficial": "Quando um arquivo PGP contém uma assinatura digital anexada à mensagem criptografada, o crypto:pgp-decrypt tenta validar a assinatura usando o anel de chaves públicas configurado no publicKeyRingFileName da configuração global (crypto:pgp-config). Como o Key ID do remetente (0x3A2B1C0D) não foi encontrado no chaveiro público da aplicação Mule, ocorre a falha de verificação. A inclusão da chave pública do fornecedor no publicKeyRingFileName permite validar a identidade do remetente sem desativar a integridade/autenticidade.",
+    "resposta_correta": "B) Importar a chave pública do parceiro (0x3A2B1C0D) no arquivo configurado em publicKeyRingFileName e declará-la em <crypto:pgp-keys>.",
+    "explicacao_oficial": "De acordo com a documentação oficial de PGP Cryptography no Mule Cryptography Module, a operação pgp-decrypt decifra o conteúdo usando a chave privada do destinatário (secretKeyRingFileName) e valida a assinatura do remetente buscando a chave pública dele no publicKeyRingFileName.",
     "url_referencia": "https://docs.mulesoft.com/cryptography-module/latest/cryptography-pgp"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
-    "enunciado": "Uma aplicação Mule 4 consome um serviço downstream através de um HTTP Request configurado com oauth:client-credentials-grant-type. O Authorization Server emite access tokens com TTL de 3600 segundos (1 hora). No entanto, o provedor revoga tokens periodicamente antes do término do tempo de vida para auditoria de segurança.\nQuando um token é revogado, as requisições subsequentes do HTTP Request falham continuamente com HTTP:UNAUTHORIZED (401) por até 1 hora, pois o conector continua usando o token em cache.\n\nQual é a solução recomendada pela MuleSoft para invalidar o token em cache e requisitar um novo imediatamente após uma resposta 401?",
-    "codigo_xml_ou_dw": "<oauth:client-credentials-grant-type\n  clientId=\"${oauth.id}\"\n  clientSecret=\"${oauth.secret}\"\n  tokenUrl=\"${oauth.url}\">\n</oauth:client-credentials-grant-type>",
+    "enunciado": "Uma aplicação Mule 4 consome um serviço externo via HTTP Request configurado com <oauth:client-credentials-grant-type>. Quando o servidor OAuth revoga um token antecipadamente e retorna HTTP 401, o conector continua reutilizando o token em cache até expirar o TTL. Qual atributo oficial do OAuth 2.0 no Mule permite invalidar e renovar o token imediatamente com base na resposta?",
+    "codigo_xml_ou_dw": "<oauth:client-credentials-grant-type\n  clientId=\"${oauth.id}\"\n  clientSecret=\"${oauth.secret}\"\n  tokenUrl=\"${oauth.url}\"\n  refreshTokenWhen=\"#[attributes.statusCode == 401]\"/>",
     "alternativas": [
-      "A) Configurar o atributo refreshTokenWhen com uma expressão DataWeave que avalie para true quando o status retornado for 401.",
-      "B) Adicionar a propriedade clientCredentialsLocation=\"HEADER\" para desabilitar o cache interno de tokens.",
-      "C) Envolver a operação HTTP Request com um Until-Successful com maxRetries=\"3\", o que força a renovação de tokens a cada tentativa.",
-      "D) Definir um Object Store transitório com ttlUnit=\"SECONDS\" e entryTtl=\"1\" no tokenManagerConfig."
+      "A) Configurar o atributo refreshTokenWhen com uma expressão DataWeave que avalie para true quando ocorrer 401.",
+      "B) Adicionar a propriedade clientCredentialsLocation=\"HEADER\" para desabilitar o cache.",
+      "C) Envolver o HTTP Request em um Until Successful, o que limpa o Token Manager automaticamente.",
+      "D) Definir encodeClientCredentials=\"false\"."
     ],
-    "resposta_correta": "A) Configurar o atributo refreshTokenWhen com uma expressão DataWeave que avalie para true quando o status retornado for 401.",
-    "explicacao_oficial": "O elemento oauth:client-credentials-grant-type possui o atributo refreshTokenWhen, que aceita uma expressão DataWeave (por exemplo: refreshTokenWhen=\"#[error.description contains 'Unauthorized' or attributes.statusCode == 401]\"). Quando a requisição falha e a expressão avalia como verdadeira, o conector invalida automaticamente o token expirado/revogado do cache, solicita um novo token ao tokenUrl e repete a chamada HTTP original de forma transparente.",
-    "url_referencia": "https://docs.mulesoft.com/http-connector/latest/http-authentication#oauth-client-credentials"
+    "resposta_correta": "A) Configurar o atributo refreshTokenWhen com uma expressão DataWeave que avalie para true quando ocorrer 401.",
+    "explicacao_oficial": "Conforme a documentação oficial de HTTP Authentication / OAuth 2.0 no Mule, o atributo refreshTokenWhen aceita uma expressão DataWeave para avaliar a resposta HTTP e disparar automaticamente a renovação do access token quando a condição for verdadeira.",
+    "url_referencia": "https://docs.mulesoft.com/http-connector/latest/http-authentication"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
-    "enunciado": "Uma API Mule 4 deve expor um endpoint HTTPS com mTLS (two-way TLS). O cliente fornece um certificado autoassinado. Ao configurar o TLS Context no HTTP Listener, qual é a configuração mínima necessária para garantir que o handshake ocorra com sucesso?",
-    "codigo_xml_ou_dw": "<tls:context name=\"TLS_mTLS\">\n  <tls:key-store path=\"srv.jks\" ... />\n  <tls:trust-store path=\"ca.jks\" ... />\n</tls:context>",
+    "enunciado": "Uma API Mule 4 expõe um endpoint HTTPS em um HTTP Listener exigindo autenticação mútua (Two-Way TLS / mTLS) dos clientes consumidores. Quais elementos devem estar configurados no <tls:context> do servidor HTTP Listener para que ele apresente seu certificado e exija o certificado do cliente?",
+    "codigo_xml_ou_dw": "<tls:context name=\"Server_mTLS\">\n  <tls:key-store path=\"server.p12\" ... />\n  <tls:trust-store path=\"clients-ca.p12\" ... />\n</tls:context>",
     "alternativas": [
-      "A) Apenas o KeyStore no TLS Context.",
-      "B) KeyStore e TrustStore, com o parâmetro 'requireClientAuthentication' definido como 'true'.",
-      "C) Apenas o TrustStore, pois o cliente já confia no servidor.",
-      "D) KeyStore e TrustStore, com o parâmetro 'requireClientAuthentication' definido como 'false'."
+      "A) Apenas <tls:key-store>, pois o HTTP Listener valida clientes automaticamente.",
+      "B) Tanto <tls:key-store> (identidade do servidor) quanto <tls:trust-store> (CAs confiáveis para validar os certificados dos clientes).",
+      "C) Apenas <tls:trust-store>, pois o certificado do servidor fica no API Manager.",
+      "D) Configurar insecure=\"true\" no <tls:trust-store> em produção."
     ],
-    "resposta_correta": "B) KeyStore e TrustStore, com o parâmetro 'requireClientAuthentication' definido como 'true'.",
-    "explicacao_oficial": "Para mTLS, o servidor precisa do KeyStore (para identificar-se) e do TrustStore (para validar o certificado do cliente). O parâmetro 'requireClientAuthentication' deve ser 'true' para forçar a validação do certificado do cliente durante o handshake.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/tls-configuration"
+    "resposta_correta": "B) Tanto <tls:key-store> (identidade do servidor) quanto <tls:trust-store> (CAs confiáveis para validar os certificados dos clientes).",
+    "explicacao_oficial": "De acordo com a documentação oficial de TLS Configuration no Mule Runtime, quando um HTTP Listener atua como servidor em Two-Way TLS (mTLS), o <tls:context> precisa do <tls:key-store> (contendo a chave privada/certificado do servidor) e do <tls:trust-store> (contendo os certificados/CAs aceitos dos clientes).",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/tls-configuration"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
-    "enunciado": "Sua equipe utiliza o Secure Properties Tool para criptografar valores no arquivo 'mule-artifact.json'. Ao implantar no CloudHub, o valor da chave de criptografia é injetado via Property. Qual é a prática recomendada para evitar que a chave fique exposta em logs ou no Runtime Manager?",
-    "codigo_xml_ou_dw": "<secure-properties:config\n  name=\"Secure_Config\"\n  key=\"${env.KEY}\"\n  file=\"config.yaml\" />",
+    "enunciado": "Ao implantar uma aplicação Mule 4 no CloudHub, você precisa garantir que propriedades sensíveis (como a chave de decriptografia 'enc.key' passada na aba Properties do Runtime Manager) fiquem ocultas com asteriscos (****) na interface do Runtime Manager e nos logs de inicialização. Como isso deve ser configurado no projeto?",
+    "codigo_xml_ou_dw": "{\n  \"minMuleVersion\": \"4.6.0\",\n  \"secureProperties\": [\n    \"enc.key\",\n    \"anypoint.platform.client_secret\"\n  ]\n}",
     "alternativas": [
-      "A) Usar 'Secure' como prefixo no nome da variável de ambiente.",
-      "B) Definir a chave como 'Protected' no Runtime Manager.",
-      "C) Marcar a variável de ambiente como 'Secure' no Runtime Manager.",
-      "D) Armazenar a chave em um arquivo .properties local."
+      "A) Declarar o nome das propriedades no array \"secureProperties\" dentro do arquivo mule-artifact.json.",
+      "B) Usar o prefixo 'SECURE_' no nome de todas as variáveis no arquivo config.yaml.",
+      "C) Criptografar o próprio arquivo mule-artifact.json com Blowfish.",
+      "D) Definir <global-property masked=\"true\"/> no XML da aplicação."
     ],
-    "resposta_correta": "C) Marcar a variável de ambiente como 'Secure' no Runtime Manager.",
-    "explicacao_oficial": "No CloudHub, ao definir propriedades de ambiente, marcar a opção 'Secure' oculta o valor na UI do Runtime Manager e impede que ele seja exibido em logs de sistema ou via API de gerenciamento.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/secure-configuration-properties"
+    "resposta_correta": "A) Declarar o nome das propriedades no array \"secureProperties\" dentro do arquivo mule-artifact.json.",
+    "explicacao_oficial": "Conforme a documentação oficial 'Safely Hiding Properties', para mascarar valores de propriedades de aplicação na UI do Runtime Manager (CloudHub) e protegê-los contra exibição em texto claro, deve-se listar os nomes das chaves no array \"secureProperties\" dentro do arquivo mule-artifact.json.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/safely-hiding-properties"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
-    "enunciado": "Um fluxo precisa assinar digitalmente um payload usando o módulo Cryptography. O requisito exige o uso de um algoritmo assimétrico. Qual componente deve ser utilizado para garantir a integridade e autenticidade?",
-    "codigo_xml_ou_dw": "<crypto:asymmetric-sign\n  keyId=\"myKey\"\n  config-ref=\"Crypto_Config\"\n  algorithm=\"RSA_SHA256\" />",
+    "enunciado": "Um fluxo precisa assinar digitalmente o payload utilizando uma chave privada armazenada em um Keystore JKS através do módulo Cryptography (JCE) para garantir autenticidade e integridade. Qual operação do módulo JCE Cryptography deve ser utilizada?",
+    "codigo_xml_ou_dw": "<crypto:jce-sign\n  config-ref=\"JCE_Config\"\n  keyId=\"myKey\"\n  password=\"${key.pass}\"\n  algorithm=\"SHA256withRSA\"/>",
     "alternativas": [
-      "A) O componente 'JCE Encrypt' com chave pública.",
-      "B) O componente 'Asymmetric Sign' com chave privada.",
-      "C) O componente 'PGP Sign' com chave pública.",
-      "D) O componente 'Digest' com algoritmo SHA-256."
+      "A) <crypto:jce-encrypt-pbe> utilizando senha simétrica.",
+      "B) <crypto:jce-sign> referenciando a chave privada assimétrica no JCE Keystore configurado.",
+      "C) <crypto:pgp-encrypt> com algoritmo AES.",
+      "D) <crypto:calculate-checksum> com algoritmo MD5."
     ],
-    "resposta_correta": "B) O componente 'Asymmetric Sign' com chave privada.",
-    "explicacao_oficial": "Assinaturas digitais utilizam a chave privada do remetente para assinar o hash do documento. O receptor utiliza a chave pública correspondente para verificar a autenticidade.",
-    "url_referencia": "https://docs.mulesoft.com/cryptography-module/1.3/cryptography-sign"
+    "resposta_correta": "B) <crypto:jce-sign> referenciando a chave privada assimétrica no JCE Keystore configurado.",
+    "explicacao_oficial": "De acordo com a documentação oficial de JCE Cryptography no Mule Cryptography Module, a operação <crypto:jce-sign> assina um payload usando uma chave privada assimétrica armazenada no Keystore JCE, permitindo posterior verificação com <crypto:jce-verify>.",
+    "url_referencia": "https://docs.mulesoft.com/cryptography-module/latest/cryptography-jce"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
-    "enunciado": "Em uma aplicação Mule 4, uma mensagem entra em um fluxo e gera vários subfluxos assíncronos. A equipe de operações relata que o Correlation ID original da requisição HTTP de entrada é perdido nesses subfluxos, dificultando o rastreamento via Anypoint Monitoring. Como você deve garantir a propagação correta do Correlation ID?",
-    "codigo_xml_ou_dw": "<async doc:name=\"Async\">\n  <flow-ref name=\"sub\">\n</async>",
+    "enunciado": "Em uma aplicação Mule 4, uma requisição HTTP entra no fluxo principal com o cabeçalho 'x-correlation-id' e invoca outra aplicação Mule downstream através de um componente <http:request>. Como o Mule 4 gerencia a propagação do Correlation ID entre essas chamadas HTTP?",
+    "codigo_xml_ou_dw": "<http:request\n  method=\"POST\"\n  config-ref=\"HTTP_Req\"\n  path=\"/orders\"\n  sendCorrelationId=\"ALWAYS\"/>",
     "alternativas": [
-      "A) O Correlation ID propaga-se de forma nativa e automática em chamadas async.",
-      "B) Utilizar a função message.id dentro do subfluxo.",
-      "C) Capturar o attributes.headers['x-correlation-id'] e repassá-lo explicitamente.",
-      "D) Configurar a política de autodiscovery no domain project."
+      "A) O Mule 4 nunca propaga o Correlation ID via HTTP; é obrigatório criar um cabeçalho customizado manualmente em todos os fluxos.",
+      "B) O HTTP Listener lê 'x-correlation-id' da requisição de entrada para definir #[correlationId], e o HTTP Request o propaga automaticamente no header 'x-correlation-id' (controlado por sendCorrelationId).",
+      "C) O Correlation ID só existe em filas JMS e VM, não sendo suportado no conector HTTP.",
+      "D) O Correlation ID é reiniciado a cada componente Flow Reference (<flow-ref>)."
     ],
-    "resposta_correta": "C) Capturar o attributes.headers['x-correlation-id'] e repassá-lo explicitamente.",
-    "explicacao_oficial": "O escopo de uma thread assíncrona (<async>) em Mule 4 cria uma nova execução com seu próprio Correlation ID se não for explicitamente preservado ou se o cabeçote não for repassado da requisição original antes da mudança de contexto de thread.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/intro-correlation-id"
+    "resposta_correta": "B) O HTTP Listener lê 'x-correlation-id' da requisição de entrada para definir #[correlationId], e o HTTP Request o propaga automaticamente no header 'x-correlation-id' (controlado por sendCorrelationId).",
+    "explicacao_oficial": "Conforme a documentação oficial de Correlation ID no Mule Runtime, quando um evento é iniciado por um conector que suporta Correlation ID (como HTTP Listener), ele extrai o header x-correlation-id (ou gera um novo) e o propaga nas chamadas externas (HTTP Request envia x-correlation-id por padrão quando sendCorrelationId é AUTO/ALWAYS).",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/correlation-id"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
-    "enunciado": "Sua organização exige que todos os logs de produção em aplicações Mule 4 utilizem o formato JSON estruturado, incluindo metadados personalizados como o ID do tenant. Qual dependência e configuração devem ser aplicadas no pom.xml e log4j2.xml?",
-    "codigo_xml_ou_dw": "<dependency>\n  <groupId>com.mulesoft.services</groupId>\n  <artifactId>\nmule-service-logger-,\next\n  </artifactId>\n</dependency>",
+    "enunciado": "Sua organização utiliza Anypoint Monitoring (Titanium) e deseja pesquisar, filtrar e correlacionar logs de aplicações Mule 4 implantadas no CloudHub e Runtime Fabric usando campos estruturados. Como o sistema de logs do Anypoint Monitoring processa os eventos gerados pela aplicação?",
+    "codigo_xml_ou_dw": "<Logger level=\"INFO\"\n  message=\"#[output application/json --- {orderId: vars.id, status: 'PROCESSED'}]\"/>",
     "alternativas": [
-      "A) Utilizar log4j-slf4j-impl padrão sem dependências extras.",
-      "B) Adicionar o mule-json-logging e configurar o appender JSON no log4j2.xml.",
-      "C) Modificar apenas as propriedades do Anypoint Runtime Manager.",
-      "D) Inserir um Logger component com output application/json em cada fluxo."
+      "A) O Anypoint Monitoring ignora tudo que é impresso pelo componente Logger padrão.",
+      "B) O Anypoint Monitoring coleta e indexa os logs gerados via Log4j2 da aplicação, permitindo buscas avançadas por Correlation ID, nível de severidade e conteúdo estruturado.",
+      "C) É obrigatório desativar o arquivo log4j2.xml para que o Anypoint Monitoring funcione.",
+      "D) Logs em formato JSON causam falha no agente do Runtime Manager."
     ],
-    "resposta_correta": "B) Adicionar o mule-json-logging e configurar o appender JSON no log4j2.xml.",
-    "explicacao_oficial": "Para logs estruturados em JSON no Mule 4 de forma nativa e performática, utiliza-se o framework de logging JSON suportado pela MuleSoft configurado no arquivo log4j2.xml.",
-    "url_referencia": "https://docs.mulesoft.com/runtime-manager/anypoint-custom-metrics"
+    "resposta_correta": "B) O Anypoint Monitoring coleta e indexa os logs gerados via Log4j2 da aplicação, permitindo buscas avançadas por Correlation ID, nível de severidade e conteúdo estruturado.",
+    "explicacao_oficial": "De acordo com a documentação oficial de Logs no Anypoint Monitoring, os logs gerados pelas aplicações Mule (configurados no log4j2.xml) são agregados, indexados e disponibilizados para busca e filtragem por metadados como Correlation ID, worker, nível de log e texto/JSON da mensagem.",
+    "url_referencia": "https://docs.mulesoft.com/monitoring/latest/logs"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
-    "enunciado": "Um desenvolvedor precisa disparar Custom Business Events para monitorar KPIs de negócios diretamente no Anypoint Monitoring. Qual elemento XML deve ser utilizado dentro do fluxo Mule para registrar esses eventos?",
-    "codigo_xml_ou_dw": "<ee:transform>\n  <ee:message>\n    <ee:set-payload>\n      {status: \"OK\"}\n    </ee:set-payload>\n  </ee:message>\n</ee:transform>",
+    "enunciado": "Um arquiteto precisa enviar métricas de negócio customizadas (como valor total de pedidos por região e quantidade de itens vendidos) de dentro de um fluxo Mule 4 para visualização em Custom Dashboards no Anypoint Monitoring (Titanium). Qual componente oficial deve ser utilizado no fluxo?",
+    "codigo_xml_ou_dw": "<custom-metrics:send\n  doc:name=\"Send Custom Metric\"\n  metricName=\"order_metrics\">\n  <custom-metrics:dimensions>\n    <custom-metrics:dimension\n      dimensionName=\"region\"\n      value=\"#[payload.region]\"/>\n  </custom-metrics:dimensions>\n  <custom-metrics:facts>\n    <custom-metrics:fact\n      factName=\"total_amount\"\n      value=\"#[payload.total]\"/>\n  </custom-metrics:facts>\n</custom-metrics:send>",
     "alternativas": [
-      "A) <os:store> configurado com event tracking.",
-      "B) <tracking:custom-event> (obsoleto em Mule 4).",
-      "C) Utilizar chamadas de Logger com JSON estruturado e capturar via Custom Metrics do Anypoint Monitoring.",
-      "D) <analytics:track-event> nativo do Runtime 4.3+."
+      "A) O componente <custom-metrics:send> do Anypoint Custom Metrics Connector, definindo dimensions (texto) e facts (valores numéricos).",
+      "B) O componente <os:store> configurado com a flag metrics=\"true\".",
+      "C) O componente <api-gateway:autodiscovery> com tags de negócio.",
+      "D) O conector VM com fila do tipo METRICS."
     ],
-    "resposta_correta": "C) Utilizar chamadas de Logger com JSON estruturado e capturar via Custom Metrics do Anypoint Monitoring.",
-    "explicacao_oficial": "No Mule 4, o modelo antigo de tracking XML foi substituído por abordagens baseadas em logs JSON estruturados combinados com Anypoint Monitoring Custom Metrics.",
-    "url_referencia": "https://docs.mulesoft.com/anypoint-monitoring/am-custom-metrics"
+    "resposta_correta": "A) O componente <custom-metrics:send> do Anypoint Custom Metrics Connector, definindo dimensions (texto) e facts (valores numéricos).",
+    "explicacao_oficial": "Conforme a documentação oficial de Anypoint Custom Metrics no Anypoint Monitoring, utiliza-se o Anypoint Custom Metrics Connector (<custom-metrics:send>) na aplicação Mule 4 para enviar dimensões (metadados descritivos) e fatos (valores numéricos) para os dashboards e alertas do Anypoint Monitoring.",
+    "url_referencia": "https://docs.mulesoft.com/monitoring/latest/anypoint-custom-metrics"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
-    "enunciado": "Sua API em produção apresenta falhas intermitentes de conexão com um banco de dados externo. Você precisa configurar um Health Check endpoint customizado que valide a dependência e retorne HTTP 503 se o banco estiver indisponível. Qual a melhor prática?",
-    "codigo_xml_ou_dw": "<flow name=\"health\">\n  <http:listener\n    path=\"/health\"/>\n  <db:select>\n    <db:sql>SELECT 1</db:sql>\n  </db:select>\n</flow>",
+    "enunciado": "Sua aplicação Mule 4 está implantada no Anypoint Runtime Fabric (RTF) sobre Kubernetes. Você precisa habilitar sondas nativas de prontidão (Readiness Probes HTTP GET) para que o Kubernetes só envie tráfego para o pod quando a aplicação estiver pronta. Como isso é habilitado segundo a documentação do Runtime Fabric?",
+    "codigo_xml_ou_dw": "pod:\n  env:\n    ENABLE_READINESS_PROBE_ON_HTTP_GET: \"true\"",
     "alternativas": [
-      "A) Retornar sempre HTTP 200 para evitar falsos positivos no load balancer.",
-      "B) Usar o módulo Readiness Check nativo do Anypoint Runtime Fabric / Kubernetes se aplicável, combinando com fluxo HTTP de teste de conectividade.",
-      "C) Configurar um Object Store global para armazenar o status.",
-      "D) Depender exclusivamente do autodiscovery para reiniciar a app."
+      "A) Retornar sempre HTTP 200 estático no API Manager sem chegar ao Runtime Fabric.",
+      "B) Configurar a variável ENABLE_READINESS_PROBE_ON_HTTP_GET como \"true\" no template Kubernetes do Runtime Fabric combinada ao endpoint HTTP da aplicação.",
+      "C) Configurar um Object Store global para armazenar o status do pod.",
+      "D) O Runtime Fabric não suporta probes de Kubernetes em aplicações Mule 4."
     ],
-    "resposta_correta": "B) Usar o módulo Readiness Check nativo do Anypoint Runtime Fabric / Kubernetes se aplicável, combinando com fluxo HTTP de teste de conectividade.",
-    "explicacao_oficial": "Endpoints de Health Check (Liveness e Readiness) devem validar dependências críticas como bancos de dados para garantir que o orquestrador (como RTF ou Kubernetes) não envie tráfego para instâncias degradadas.",
-    "url_referencia": "https://docs.mulesoft.com/runtime-fabric/health-checks"
+    "resposta_correta": "B) Configurar a variável ENABLE_READINESS_PROBE_ON_HTTP_GET como \"true\" no template Kubernetes do Runtime Fabric combinada ao endpoint HTTP da aplicação.",
+    "explicacao_oficial": "De acordo com a documentação oficial de Deploy to Runtime Fabric, é possível habilitar Kubernetes HTTP GET readiness probes nativas definindo ENABLE_READINESS_PROBE_ON_HTTP_GET: \"true\" na seção pod.env do template de deployment do Runtime Fabric.",
+    "url_referencia": "https://docs.mulesoft.com/runtime-fabric/latest/deploy-to-runtime-fabric"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
-    "enunciado": "Sua API utiliza um Scatter-Gather para chamar três serviços externos. Você precisa garantir que o X-Correlation-Id seja preservado em todas as rotas assíncronas e que o log final identifique a falha específica de cada rota. Qual a configuração correta para garantir a rastreabilidade?",
-    "codigo_xml_ou_dw": "<scatter-gather>\n  <route>\n    <logger message=\"#[correlationId]\"/>\n  </route>\n</scatter-gather>",
+    "enunciado": "Um desenvolvedor precisa registrar Custom Business Events contendo metadados de negócio (como Order ID e Customer Tier) durante a execução de um fluxo Mule 4 para auditoria de transações. Qual módulo e operação oficial do Mule 4 devem ser adicionados ao fluxo?",
+    "codigo_xml_ou_dw": "<tracking:custom-event\n  doc:name=\"Order Event\"\n  event-name=\"OrderProcessed\">\n  <tracking:meta-data\n    key=\"orderId\"\n    value=\"#[payload.id]\"/>\n</tracking:custom-event>",
     "alternativas": [
-      "A) O Mule 4 propaga automaticamente o correlationId em threads paralelas sem configuração adicional.",
-      "B) Você deve usar o componente 'Set Variable' para copiar o correlationId para uma variável de sessão.",
-      "C) O correlationId é propagado automaticamente, mas deve-se garantir que o log utilize o padrão de log estruturado (JSON) com o campo 'correlationId'.",
-      "D) É necessário configurar manualmente o header 'X-Correlation-Id' em cada componente HTTP Request dentro do Scatter-Gather."
+      "A) O elemento <tracking:custom-event> do módulo Mule Tracking com pares <tracking:meta-data>.",
+      "B) O componente <flow-ref> com o atributo tracking=\"true\".",
+      "C) O elemento <ee:cache> configurado para persistir eventos.",
+      "D) Não existe suporte a eventos de negócio customizados no Mule 4."
     ],
-    "resposta_correta": "C) O correlationId é propagado automaticamente, mas deve-se garantir que o log utilize o padrão de log estruturado (JSON) com o campo 'correlationId'.",
-    "explicacao_oficial": "No Mule 4, o correlationId é propagado automaticamente através de threads. Para monitoramento efetivo, o uso de log estruturado (JSON) permite que o Anypoint Monitoring indexe o correlationId corretamente para rastreamento distribuído.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/correlation-id"
+    "resposta_correta": "A) O elemento <tracking:custom-event> do módulo Mule Tracking com pares <tracking:meta-data>.",
+    "explicacao_oficial": "Conforme a documentação oficial de Business Events no Mule Runtime, o componente <tracking:custom-event> permite definir um event-name e adicionar pares chave-valor com <tracking:meta-data> para registrar dados de negócio específicos durante o processamento de transações.",
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/business-events"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
-    "enunciado": "Você está configurando um API Functional Monitoring para uma API que utiliza OAuth2. O teste falha ao tentar acessar o endpoint protegido. Qual a forma correta de configurar as credenciais para que o monitoramento execute com sucesso?",
-    "codigo_xml_ou_dw": "N/A",
+    "enunciado": "Você está automatizando suítes de teste no API Functional Monitoring usando o BAT CLI (Blackbox Automated Testing) para monitorar uma API protegida por OAuth 2.0 em uma Private Location. Como as credenciais sensíveis (client_secret) devem ser armazenadas e referenciadas com segurança no teste?",
+    "codigo_xml_ou_dw": "# bat.yaml / main.dwl\nimport * from bat::Mutable\nvar secret = secret('my-oauth-secret')",
     "alternativas": [
-      "A) Inserir as credenciais diretamente no script de teste do monitoramento.",
-      "B) Utilizar o 'Secure Properties' configurado no Runtime Manager.",
-      "C) Configurar o 'Credential Vault' dentro do Anypoint Monitoring.",
-      "D) Utilizar o 'Vault' do Anypoint Platform para armazenar as credenciais e referenciá-las no teste."
+      "A) Inserir o client_secret em texto claro diretamente no arquivo main.dwl versionado no Git.",
+      "B) Utilizar o comando 'bat secret create' integrado ao Anypoint Secrets Manager (Shared Secrets) e referenciar o alias no teste.",
+      "C) Passar a senha na URL pública do endpoint monitorado.",
+      "D) O API Functional Monitoring não suporta autenticação em endpoints monitorados."
     ],
-    "resposta_correta": "D) Utilizar o 'Vault' do Anypoint Platform para armazenar as credenciais e referenciá-las no teste.",
-    "explicacao_oficial": "O API Functional Monitoring permite a integração com o Anypoint Secret Manager (Vault) para gerenciar credenciais de forma segura, evitando exposição em scripts de teste.",
-    "url_referencia": "https://docs.mulesoft.com/api-manager/2.x/api-functional-monitoring"
+    "resposta_correta": "B) Utilizar o comando 'bat secret create' integrado ao Anypoint Secrets Manager (Shared Secrets) e referenciar o alias no teste.",
+    "explicacao_oficial": "De acordo com a documentação oficial do API Functional Monitoring ('Using Secrets to Mask Sensitive Information in Monitors'), o BAT permite criar e gerenciar segredos armazenados no Anypoint Secrets Manager para mascarar credenciais sensíveis nos monitores.",
+    "url_referencia": "https://docs.mulesoft.com/api-functional-monitoring/latest/bat-secret-create-task"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
-    "enunciado": "Sua equipe precisa implementar um Health Check endpoint que verifique a conectividade com um Object Store e um banco de dados. Qual a melhor prática para expor esse status no Anypoint Monitoring?",
-    "codigo_xml_ou_dw": "<http:listener path=\"/health\"/>\n<db:select ... />\n<os:contains ... />",
+    "enunciado": "Sua equipe implementou um endpoint dedicado '/health' na aplicação Mule 4 que verifica a conectividade com o banco de dados e retorna HTTP 200 (saudável) ou HTTP 503 (indisponível). Como você pode monitorar proativamente a saúde e o tempo de resposta dessa API no Anypoint Monitoring?",
+    "codigo_xml_ou_dw": "<flow name=\"health-check-flow\">\n  <http:listener config-ref=\"HTTP\"\n    path=\"/health\"/>\n  <db:select config-ref=\"DB\">\n    <db:sql>SELECT 1</db:sql>\n  </db:select>\n</flow>",
     "alternativas": [
-      "A) Criar um fluxo separado que retorna 200 OK se todas as chamadas forem bem-sucedidas.",
-      "B) Utilizar o módulo 'Mule Health Check' que expõe automaticamente o status via JMX.",
-      "C) Implementar um Custom Business Event que envia o status de cada dependência para o Anypoint Monitoring.",
-      "D) Configurar um 'Custom Dashboard' que consulta o log da aplicação via API de logs."
+      "A) Configurar Basic/Advanced Alerts no Anypoint Monitoring baseados em Response Code (ex: 5xx) e Response Time da aplicação/API.",
+      "B) O Anypoint Monitoring só permite alertas de uso de CPU e não monitora códigos de status HTTP.",
+      "C) Desabilitar os logs da aplicação para ativar alertas HTTP.",
+      "D) Usar um Domain Project no CloudHub para emitir alertas por e-mail."
     ],
-    "resposta_correta": "A) Criar um fluxo separado que retorna 200 OK se todas as chamadas forem bem-sucedidas.",
-    "explicacao_oficial": "A criação de um endpoint /health (ou /status) é a prática padrão. O Anypoint Monitoring pode ser configurado para alertar com base na latência ou falhas desse endpoint específico.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/4.4/health-check-endpoint"
+    "resposta_correta": "A) Configurar Basic/Advanced Alerts no Anypoint Monitoring baseados em Response Code (ex: 5xx) e Response Time da aplicação/API.",
+    "explicacao_oficial": "Conforme a documentação oficial de Alerts no Anypoint Monitoring, é possível configurar alertas para aplicações e APIs baseados em métricas como Response Codes (4xx/5xx), Response Time (latência), Request Volume e Error Count.",
+    "url_referencia": "https://docs.mulesoft.com/monitoring/latest/alerts"
   },
   {
     "secao": "Expose Production-Ready Anypoint Platform-Managed APIs From Mule Applications",
-    "enunciado": "Um Integration Architect esta configurando a API Autodiscovery em uma aplicacao Mule 4 para conectar-se ao API Manager. A aplicacao esta implantada em um Runtime Fabric (RTF). No entanto, apos a inicializacao, o status da API no API Manager permanece como 'Unregistered' e logs mostram falha ao registrar o contrato. Analise o trecho de configuracao XML abaixo e identifique o motivo da falha.",
+    "enunciado": "Um Integration Architect está configurando a API Autodiscovery em uma aplicação Mule 4 para conectar-se ao API Manager. A aplicação está implantada em um ambiente gerenciado, mas após a inicialização o status da instância da API no API Manager permanece como 'Unregistered'. Analise a configuração abaixo e identifique o motivo da falha:",
     "codigo_xml_ou_dw": "<api-gateway:autodiscovery\n  apiId=\"${api.id}\"\n  flowRef=\"main-flow\"\n  ignoreBasePath=\"true\"/>",
     "alternativas": [
-      "A) A propriedade apiId nao foi resolvida corretamente no arquivo de propriedades.",
-      "B) Falta definir a propriedade anypoint.platform.client_id e client_secret no pom.xml.",
-      "C) O elemento api-gateway:autodiscovery requer o atributo property placeholder para o clientId.",
-      "D) Falta definir as credenciais do Anypoint Platform como system properties na inicializacao do Runtime."
+      "A) O atributo ignoreBasePath=\"true\" impede o registro no API Manager.",
+      "B) Falta definir as credenciais do Anypoint Platform (anypoint.platform.client_id e anypoint.platform.client_secret) nas propriedades de execução do Runtime.",
+      "C) O elemento api-gateway:autodiscovery exige um atributo clientSecret diretamente na tag XML.",
+      "D) A API Autodiscovery só funciona se o fluxo usar um conector VM em vez de HTTP Listener."
     ],
-    "resposta_correta": "D) Falta definir as credenciais do Anypoint Platform como system properties na inicializacao do Runtime.",
-    "explicacao_oficial": "Para que a API Autodiscovery funcione corretamente, a aplicacao Mule precisa se autenticar no Anypoint Platform. Em ambientes como Runtime Fabric ou CloudHub, isso exige que anypoint.platform.client_id e anypoint.platform.client_secret sejam passados como System Properties ou variaveis de ambiente no momento da execucao.",
-    "url_referencia": "https://docs.mulesoft.com/api-manager/latest/api-autodiscovery-concept-mule-4"
+    "resposta_correta": "B) Falta definir as credenciais do Anypoint Platform (anypoint.platform.client_id e anypoint.platform.client_secret) nas propriedades de execução do Runtime.",
+    "explicacao_oficial": "De acordo com a documentação oficial de API Autodiscovery no API Manager, além do elemento <api-gateway:autodiscovery> com o apiId da instância, o Mule Runtime precisa ser autenticado no ambiente do Anypoint Platform configurando as propriedades anypoint.platform.client_id e anypoint.platform.client_secret.",
+    "url_referencia": "https://docs.mulesoft.com/api-manager/latest/api-autodiscovery"
   },
   {
     "secao": "Expose Production-Ready Anypoint Platform-Managed APIs From Mule Applications",
-    "enunciado": "Uma empresa precisa aplicar uma Custom Policy desenvolvida internamente em varias APIs gerenciadas pelo API Manager. A policy realiza validacoes de cabecalho customizadas. Ao tentar aplicar a policy usando Automated Policies, o desenvolvedor percebe que a policy nao aparece disponivel na lista do API Manager. Qual e o requisito obrigatorio para que uma Custom Policy seja disponibilizada para selecao em Automated Policies?",
-    "codigo_xml_ou_dw": "<policy name=\"custom-header-policy\">\n  <before>\n    <http:validate-header/>\n  </before>\n</policy>",
+    "enunciado": "Uma empresa desenvolveu uma Custom Policy para validar cabeçalhos de segurança específicos em suas APIs Mule 4. Ao tentar aplicar a policy no API Manager (manualmente ou via Automated Policies), a policy não aparece na lista de políticas disponíveis. Qual etapa obrigatória do ciclo de vida da Custom Policy não foi realizada?",
+    "codigo_xml_ou_dw": "<policy name=\"custom-header-policy\">\n  <before>\n    <http:transform/>\n  </before>\n</policy>",
     "alternativas": [
-      "A) Deve ser publicada no Exchange da organizacao com o asset type 'custom-policy'.",
-      "B) Deve ser instalada manualmente no diretorio /policies do Mule Runtime.",
-      "C) Deve ser declarada como dependencia no pom.xml do API Manager.",
-      "D) Deve ser assinada digitalmente com certificado da Anypoint Platform."
+      "A) Empacotar e publicar a Custom Policy no Anypoint Exchange da organização usando 'mvn clean deploy'.",
+      "B) Copiar o arquivo YAML manualmente para a pasta /conf do Anypoint Studio.",
+      "C) Declarar a policy como dependência dentro do pom.xml de cada aplicação consumidora.",
+      "D) Converter a policy em um conector Java SDK antes de usar no API Manager."
     ],
-    "resposta_correta": "A) Deve ser publicada no Exchange da organizacao com o asset type 'custom-policy'.",
-    "explicacao_oficial": "Para que qualquer Custom Policy possa ser aplicada diretamente atraves do API Manager (seja manualmente ou via Automated Policies), o pacote YAML/XML da policy deve ser publicado no Anypoint Exchange da organizacao raiz com o asset type correto (custom-policy).",
-    "url_referencia": "https://docs.mulesoft.com/api-manager/latest/custom-policies-configure"
+    "resposta_correta": "A) Empacotar e publicar a Custom Policy no Anypoint Exchange da organização usando 'mvn clean deploy'.",
+    "explicacao_oficial": "Conforme a documentação oficial de Custom Policies no API Manager, após desenvolver e empacotar a policy com o mule-policy-packaging-plugin, ela deve ser publicada no Anypoint Exchange da organização para que fique disponível para aplicação nas instâncias de API no API Manager.",
+    "url_referencia": "https://docs.mulesoft.com/api-manager/latest/custom-policy"
   }
 ]
