@@ -1,0 +1,11 @@
+# Variáveis de ambiente com chaves de API (NUNCA versionar)
+.env
+.env.*
+!.env.example
+
+# Ambientes virtuais e cache Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
