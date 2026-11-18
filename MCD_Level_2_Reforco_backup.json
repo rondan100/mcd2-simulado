@@ -109,7 +109,7 @@
     ],
     "resposta_correta": "A) O <id> do elemento <server> no settings.xml deve corresponder exatamente ao <id> do <repository> em <distributionManagement> no pom.xml.",
     "explicacao_oficial": "De acordo com a documentação oficial de publicação de assets no Exchange via Maven, o Maven localiza as credenciais comparando o <id> definido em <distributionManagement><repository> no pom.xml com o <id> correspondente em <servers><server> no settings.xml.",
-    "url_referencia": "https://docs.mulesoft.com/exchange/latest/to-publish-assets-maven"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/maven-reference"
   },
   {
     "secao": "Implement Maintainable and Modular Mule Applications and Their Maven Build",
@@ -235,7 +235,7 @@
     ],
     "resposta_correta": "A) No OSv2, se o expirationInterval for menor que o entryTtl, o TTL torna-se dinâmico (Rolling TTL), renovando o tempo de vida a cada acesso.",
     "explicacao_oficial": "De acordo com o guia oficial do Object Store v2 (OSv2 Guide), quando o valor de expirationInterval é menor que o entryTtl, o TTL comporta-se como Rolling TTL (o prazo é estendido toda vez que a chave é acessada). Para Static TTL, o expirationInterval deve ser maior ou igual ao entryTtl.",
-    "url_referencia": "https://docs.mulesoft.com/object-store/latest/osv2-guide"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/scatter-gather-concept"
   },
   {
     "secao": "Implement Performant and Reliable Mule Applications",
@@ -375,7 +375,7 @@
     ],
     "resposta_correta": "B) Importar a chave pública do parceiro (0x3A2B1C0D) no arquivo configurado em publicKeyRingFileName e declará-la em <crypto:pgp-keys>.",
     "explicacao_oficial": "De acordo com a documentação oficial de PGP Cryptography no Mule Cryptography Module, a operação pgp-decrypt decifra o conteúdo usando a chave privada do destinatário (secretKeyRingFileName) e valida a assinatura do remetente buscando a chave pública dele no publicKeyRingFileName.",
-    "url_referencia": "https://docs.mulesoft.com/cryptography-module/latest/cryptography-pgp"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
@@ -417,7 +417,7 @@
     ],
     "resposta_correta": "A) Declarar o nome das propriedades no array \"secureProperties\" dentro do arquivo mule-artifact.json.",
     "explicacao_oficial": "Conforme a documentação oficial 'Safely Hiding Properties', para mascarar valores de propriedades de aplicação na UI do Runtime Manager (CloudHub) e protegê-los contra exibição em texto claro, deve-se listar os nomes das chaves no array \"secureProperties\" dentro do arquivo mule-artifact.json.",
-    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/safely-hiding-properties"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties"
   },
   {
     "secao": "Secure Data at Rest and In Transit",
@@ -431,7 +431,7 @@
     ],
     "resposta_correta": "B) <crypto:jce-sign> referenciando a chave privada assimétrica no JCE Keystore configurado.",
     "explicacao_oficial": "De acordo com a documentação oficial de JCE Cryptography no Mule Cryptography Module, a operação <crypto:jce-sign> assina um payload usando uma chave privada assimétrica armazenada no Keystore JCE, permitindo posterior verificação com <crypto:jce-verify>.",
-    "url_referencia": "https://docs.mulesoft.com/cryptography-module/latest/cryptography-jce"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/secure-configuration-properties"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
@@ -459,7 +459,7 @@
     ],
     "resposta_correta": "B) O Anypoint Monitoring coleta e indexa os logs gerados via Log4j2 da aplicação, permitindo buscas avançadas por Correlation ID, nível de severidade e conteúdo estruturado.",
     "explicacao_oficial": "De acordo com a documentação oficial de Logs no Anypoint Monitoring, os logs gerados pelas aplicações Mule (configurados no log4j2.xml) são agregados, indexados e disponibilizados para busca e filtragem por metadados como Correlation ID, worker, nível de log e texto/JSON da mensagem.",
-    "url_referencia": "https://docs.mulesoft.com/monitoring/latest/logs"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
@@ -473,7 +473,7 @@
     ],
     "resposta_correta": "A) O componente <custom-metrics:send> do Anypoint Custom Metrics Connector, definindo dimensions (texto) e facts (valores numéricos).",
     "explicacao_oficial": "Conforme a documentação oficial de Anypoint Custom Metrics no Anypoint Monitoring, utiliza-se o Anypoint Custom Metrics Connector (<custom-metrics:send>) na aplicação Mule 4 para enviar dimensões (metadados descritivos) e fatos (valores numéricos) para os dashboards e alertas do Anypoint Monitoring.",
-    "url_referencia": "https://docs.mulesoft.com/monitoring/latest/anypoint-custom-metrics"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
@@ -515,7 +515,7 @@
     ],
     "resposta_correta": "B) Utilizar o comando 'bat secret create' integrado ao Anypoint Secrets Manager (Shared Secrets) e referenciar o alias no teste.",
     "explicacao_oficial": "De acordo com a documentação oficial do API Functional Monitoring ('Using Secrets to Mask Sensitive Information in Monitors'), o BAT permite criar e gerenciar segredos armazenados no Anypoint Secrets Manager para mascarar credenciais sensíveis nos monitores.",
-    "url_referencia": "https://docs.mulesoft.com/api-functional-monitoring/latest/bat-secret-create-task"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
   },
   {
     "secao": "Implement Monitorable Mule Applications",
@@ -529,7 +529,7 @@
     ],
     "resposta_correta": "A) Configurar Basic/Advanced Alerts no Anypoint Monitoring baseados em Response Code (ex: 5xx) e Response Time da aplicação/API.",
     "explicacao_oficial": "Conforme a documentação oficial de Alerts no Anypoint Monitoring, é possível configurar alertas para aplicações e APIs baseados em métricas como Response Codes (4xx/5xx), Response Time (latência), Request Volume e Error Count.",
-    "url_referencia": "https://docs.mulesoft.com/monitoring/latest/alerts"
+    "url_referencia": "https://docs.mulesoft.com/mule-runtime/latest/logging-in-mule"
   },
   {
     "secao": "Expose Production-Ready Anypoint Platform-Managed APIs From Mule Applications",
@@ -557,6 +557,6 @@
     ],
     "resposta_correta": "A) Empacotar e publicar a Custom Policy no Anypoint Exchange da organização usando 'mvn clean deploy'.",
     "explicacao_oficial": "Conforme a documentação oficial de Custom Policies no API Manager, após desenvolver e empacotar a policy com o mule-policy-packaging-plugin, ela deve ser publicada no Anypoint Exchange da organização para que fique disponível para aplicação nas instâncias de API no API Manager.",
-    "url_referencia": "https://docs.mulesoft.com/api-manager/latest/custom-policy"
+    "url_referencia": "https://docs.mulesoft.com/api-manager/latest/api-autodiscovery"
   }
 ]
